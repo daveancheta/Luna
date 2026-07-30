@@ -133,6 +133,15 @@
   font-family: 'Lokeya', sans-serif;
 }
 
+.scrollable-div::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollable-div {
+  -ms-overflow-style: none; /* IE/Edge legacy */
+  scrollbar-width: none; /* Firefox */
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
