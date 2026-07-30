@@ -122,6 +122,17 @@
   font-family: "Google Sans", sans-serif;
 }
 
+@font-face {
+  font-family: 'Lokeya';
+  src: url('/font/Lokeya.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.lokeya {
+  font-family: 'Lokeya', sans-serif;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

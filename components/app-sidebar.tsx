@@ -14,9 +14,27 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar"
+import { cn } from "@/lib/utils"
+import { CirclePlus } from "lucide-react"
+
+type NavSubItem = {
+  title: string
+  url: string
+  icon?: React.ReactNode
+  isActive?: boolean
+}
+
+type NavGroup = {
+  title: string
+  url: string
+  items: NavSubItem[]
+}
 
 // This is sample data.
-const data = {
+const data: {
+  versions: string[]
+  navMain: NavGroup[]
+} = {
   versions: ["1.0.1", "1.1.0-alpha", "2.0.0-beta1"],
   navMain: [
     {
@@ -24,122 +42,35 @@ const data = {
       url: "#",
       items: [
         {
-          title: "Installation",
+          title: "New Conversation",
           url: "#",
-        },
-        {
-          title: "Project Structure",
-          url: "#",
+          icon: <CirclePlus />
         },
       ],
     },
     {
-      title: "Build Your Application",
+      title: "Recent",
       url: "#",
       items: [
         {
-          title: "Routing",
+          title: "Cancer awareness ribbon color",
           url: "#",
         },
         {
-          title: "Data Fetching",
+          title: "Title format identification",
           url: "#",
           isActive: true,
         },
         {
-          title: "Rendering",
+          title: "Dashboard layout with sidebar and branch selector",
           url: "#",
         },
         {
-          title: "Caching",
+          title: "Advanced project ideas",
           url: "#",
         },
         {
-          title: "Styling",
-          url: "#",
-        },
-        {
-          title: "Optimizing",
-          url: "#",
-        },
-        {
-          title: "Configuring",
-          url: "#",
-        },
-        {
-          title: "Testing",
-          url: "#",
-        },
-        {
-          title: "Authentication",
-          url: "#",
-        },
-        {
-          title: "Deploying",
-          url: "#",
-        },
-        {
-          title: "Upgrading",
-          url: "#",
-        },
-        {
-          title: "Examples",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "API Reference",
-      url: "#",
-      items: [
-        {
-          title: "Components",
-          url: "#",
-        },
-        {
-          title: "File Conventions",
-          url: "#",
-        },
-        {
-          title: "Functions",
-          url: "#",
-        },
-        {
-          title: "next.config.js Options",
-          url: "#",
-        },
-        {
-          title: "CLI",
-          url: "#",
-        },
-        {
-          title: "Edge Runtime",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Architecture",
-      url: "#",
-      items: [
-        {
-          title: "Accessibility",
-          url: "#",
-        },
-        {
-          title: "Fast Refresh",
-          url: "#",
-        },
-        {
-          title: "Next.js Compiler",
-          url: "#",
-        },
-        {
-          title: "Supported Browsers",
-          url: "#",
-        },
-        {
-          title: "Turbopack",
+          title: "Community-focused coding project ideas",
           url: "#",
         },
       ],
@@ -148,7 +79,7 @@ const data = {
 }
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
-    <Sidebar {...props}>
+    <Sidebar {...props} variant="floating">
       <SidebarHeader>
         <VersionSwitcher
           versions={data.versions}
@@ -159,16 +90,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         {data.navMain.map((item) => (
           <SidebarGroup key={item.title}>
-            <SidebarGroupLabel>{item.title}</SidebarGroupLabel>
+            <SidebarGroupLabel className={cn(item.title ===  "Getting Started" && "hidden")}>{item.title}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {item.items.map((item) => (
-                  <SidebarMenuItem key={item.title}>
+                {item.items.map((subItem) => (
+                  <SidebarMenuItem key={subItem.title}>
                     <SidebarMenuButton
-                      isActive={item.isActive}
-                      render={<a href={item.url} />}
+                      isActive={subItem.isActive}
+                      render={<a href={subItem.url} />}
                     >
-                      {item.title}
+                      {subItem.icon}
+                      <span>{subItem.title}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
