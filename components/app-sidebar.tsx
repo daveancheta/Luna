@@ -5,6 +5,7 @@ import { VersionSwitcher } from "@/components/version-switcher"
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -16,6 +17,9 @@ import {
 } from "@/components/ui/sidebar"
 import { cn } from "@/lib/utils"
 import { CirclePlus } from "lucide-react"
+import { Button } from "./ui/button"
+import StackIcon from 'tech-stack-icons'
+import { UseAuthStore } from "@/app/state/use-store-auth"
 
 type NavSubItem = {
   title: string
@@ -78,6 +82,7 @@ const data: {
   ],
 }
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { signInWithGoogle } = UseAuthStore()
   return (
     <Sidebar {...props} variant="sidebar">
       <SidebarHeader>
@@ -87,10 +92,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         />
         <SearchForm />
       </SidebarHeader>
+
       <SidebarContent>
         {data.navMain.map((item) => (
           <SidebarGroup key={item.title}>
-            <SidebarGroupLabel className={cn(item.title ===  "Getting Started" && "hidden")}>{item.title}</SidebarGroupLabel>
+            <SidebarGroupLabel className={cn(item.title === "Getting Started" && "hidden")}>
+              {item.title}
+            </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {item.items.map((subItem) => (
@@ -109,7 +117,23 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarGroup>
         ))}
       </SidebarContent>
+
       <SidebarRail />
+      <SidebarFooter className="mb-4">
+        <Button
+          variant="outline"
+          className="bg-white dark:bg-zinc-800 text-gray-800 dark:text-gray-100
+             border-gray-200 dark:border-zinc-700 rounded-xl px-4 py-2
+             shadow-[0_3px_0_0_#e5e7eb] dark:shadow-[0_3px_0_0_#18181b]
+             hover:bg-gray-50 dark:hover:bg-zinc-700
+             active:shadow-[0_1px_0_0_#e5e7eb] dark:active:shadow-[0_1px_0_0_#18181b]
+             active:translate-y-0.5
+             transition-all duration-100"
+             onClick={signInWithGoogle}
+        >
+          <StackIcon name="google" className="size-4" /> Continue with Google
+        </Button>
+      </SidebarFooter>
     </Sidebar>
   )
 }
