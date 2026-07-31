@@ -12,8 +12,11 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { GalleryVerticalEndIcon, ChevronsUpDownIcon, CheckIcon } from "lucide-react"
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip"
+import { Button } from "./ui/button"
 
 export function VersionSwitcher({
   versions,
@@ -26,38 +29,15 @@ export function VersionSwitcher({
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <SidebarMenuButton
-                size="lg"
-                className="data-open:bg-sidebar-accent data-open:text-sidebar-accent-foreground"
-              />
-            }
-          >
-            <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-              <GalleryVerticalEndIcon className="size-4" />
-            </div>
-            <div className="flex flex-col gap-0.5 leading-none">
-              <span className="font-medium lokeya text-xl text-[#5B6BD8]">Luna</span>
-              <span className="">v{selectedVersion}</span>
-            </div>
-            <ChevronsUpDownIcon className="ml-auto" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
-            {versions.map((version) => (
-              <DropdownMenuItem
-                key={version}
-                onSelect={() => setSelectedVersion(version)}
-              >
-                v{version}{" "}
-                {version === selectedVersion && (
-                  <CheckIcon className="ml-auto" />
-                )}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="flex flex-row justify-between leading-none px-3 py-2">
+          <span className="font-medium lokeya text-xl text-[#5B6BD8]">Luna</span>
+          <Tooltip >
+            <TooltipTrigger render={<SidebarTrigger className="-ml-1" />} />
+            <TooltipContent side={"right"}>
+              <p>Collapse</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
       </SidebarMenuItem>
     </SidebarMenu>
   )
