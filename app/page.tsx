@@ -23,6 +23,7 @@ import { UseAiStore } from "./state/use-store-ai"
 import { UseSidebarStore } from "./state/use-store-sidebar"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { useTypewriter } from "@/hooks/use-typewriter"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 type ChatMessage = {
   role: "user" | "assistant"
@@ -83,6 +84,7 @@ export default function Page() {
   const { isGenerating, conversation, generateResponse } = UseAiStore()
   const { sidebar } = UseSidebarStore()
   const [isTypingOut, setIsTypingOut] = useState(false)
+  const isMobile = useIsMobile()
   
   useEffect(() => {
     const el = scrollRef.current
@@ -110,7 +112,6 @@ export default function Page() {
       <AppSidebar />
       <SidebarInset className="flex h-svh flex-col overflow-hidden bg-background">
         <header className="flex h-12 shrink-0 items-center gap-2 border-b border-border px-3">
-          {sidebar === "expanded" &&
             <div className="flex flex-row gap-2 items-center">
               <Tooltip >
                 <TooltipTrigger render={<SidebarTrigger className="-ml-1" />} />
@@ -120,7 +121,6 @@ export default function Page() {
               </Tooltip>
               <Separator orientation="vertical" className="mr-1 data-vertical:h-4 data-vertical:self-auto" />
             </div>
-          }
           <h1 className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
             Cancer awareness ribbon color
           </h1>
