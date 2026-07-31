@@ -13,14 +13,14 @@ interface User {
 }
 
 interface AuthState {
-    isLoading: boolean;
+    isSession: boolean;
     auth: User | null;
     signInWithGoogle: () => Promise<void>;
     handleGetSession: () => Promise<void>;
 }
 
 export const UseAuthStore = create<AuthState>((set) => ({
-    isLoading: false,
+    isSession: false,
     auth: null,
 
     signInWithGoogle: async () => {
@@ -30,6 +30,8 @@ export const UseAuthStore = create<AuthState>((set) => ({
     },
 
     handleGetSession: async () => {
+        set({ isSession: true })
+
         try {
             const result = await fetch("/api/auth/session")
 
@@ -38,6 +40,8 @@ export const UseAuthStore = create<AuthState>((set) => ({
             set({ auth: res.session.user })
         } catch (error) {
             console.log(error)
+        } finally {
+            set({ isSession: false })
         }
     }
 }))

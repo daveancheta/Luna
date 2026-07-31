@@ -102,7 +102,6 @@ export default function Page() {
     const text = prompt.trim()
     generateResponse(text)
     setPrompt("")
-
   }
 
   const canSend = prompt.trim().length > 0

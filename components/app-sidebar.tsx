@@ -20,6 +20,8 @@ import { CirclePlus } from "lucide-react"
 import { Button } from "./ui/button"
 import StackIcon from 'tech-stack-icons'
 import { UseAuthStore } from "@/app/state/use-store-auth"
+import NavUserSkeleton from "./nav-user-skeleton"
+import NavUser from "./nav-user"
 
 type NavSubItem = {
   title: string
@@ -82,7 +84,7 @@ const data: {
   ],
 }
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { signInWithGoogle, auth, handleGetSession } = UseAuthStore()
+  const { signInWithGoogle, auth, handleGetSession, isSession } = UseAuthStore()
 
   React.useEffect(() => {
     handleGetSession()
@@ -124,9 +126,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarContent>
 
       <SidebarRail />
-      <SidebarFooter className="mb-4">
-        {auth?.name}
-        {!auth &&
+      <SidebarFooter className="mb-2">
+        {isSession
+          ? <NavUserSkeleton />
+          : <NavUser name={auth?.name as string} email={auth?.email as string} image={auth?.image as string} />
+        }
+        {!auth || isSession &&
           <Button
             variant="outline"
             className="bg-white dark:bg-zinc-800 text-gray-800 dark:text-gray-100
