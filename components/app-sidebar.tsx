@@ -79,7 +79,7 @@ const data: {
 }
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
-    <Sidebar {...props} variant="floating">
+    <Sidebar {...props} variant="sidebar">
       <SidebarHeader>
         <VersionSwitcher
           versions={data.versions}
