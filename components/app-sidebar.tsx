@@ -102,7 +102,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
       <SidebarContent>
         {data.navMain.map((item) => (
-          <SidebarGroup key={item.title}>
+          <SidebarGroup key={item.title} className={cn(!auth && item.title === "Recent" && "hidden")}>
             <SidebarGroupLabel className={cn(item.title === "Getting Started" && "hidden")}>
               {item.title}
             </SidebarGroupLabel>
@@ -126,12 +126,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarContent>
 
       <SidebarRail />
-      <SidebarFooter className="mb-2">
+      <SidebarFooter className="mb-2 border-t p-4">
         {isSession
           ? <NavUserSkeleton />
-          : <NavUser name={auth?.name as string} email={auth?.email as string} image={auth?.image as string} />
+          : auth && <NavUser name={auth?.name as string} email={auth?.email as string} image={auth?.image as string} />
         }
-        {!auth || isSession &&
+
+        {!auth && !isSession && 
           <Button
             variant="outline"
             className="bg-white dark:bg-zinc-800 text-gray-800 dark:text-gray-100
