@@ -97,12 +97,14 @@ export default function Page() {
     messageEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [isGenerating, !isTypingOut])
 
-  const handleSend = (e: FormEvent) => {
-    e.preventDefault()
-    const text = prompt.trim()
-    generateResponse(text)
-    setPrompt("")
-  }
+  const handleKeyEnter = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (prompt.trim() && e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      const text = prompt.trim()
+      generateResponse(text)
+      setPrompt("")
+    }
+  };
 
   const canSend = prompt.trim().length > 0
 
@@ -174,7 +176,7 @@ export default function Page() {
         </div>
 
 
-        <form className="shrink-0 px-4 pb-5 pt-2" onSubmit={handleSend}>
+        <div className="shrink-0 px-4 pb-5 pt-2">
           <div className="mx-auto w-full max-w-3xl">
             <InputGroup
               className={cn(
@@ -189,11 +191,7 @@ export default function Page() {
                 value={prompt}
                 className="min-h-12 max-h-80 resize-none px-4 pt-4 pb-2 text-[0.9375rem] placeholder:text-muted-foreground scrollable-div"
                 onChange={(e) => setPrompt(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault()
-                  }
-                }}
+                onKeyDown={handleKeyEnter}
               />
               <InputGroupAddon
                 align="block-end"
@@ -243,7 +241,7 @@ export default function Page() {
               </InputGroupAddon>
             </InputGroup>
           </div>
-        </form>
+        </div>
       </SidebarInset>
     </SidebarProvider>
   )
