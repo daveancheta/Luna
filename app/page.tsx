@@ -24,6 +24,7 @@ import { UseSidebarStore } from "./state/use-store-sidebar"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { useTypewriter } from "@/hooks/use-typewriter"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { UseAuthStore } from "./state/use-store-auth"
 
 type ChatMessage = {
   role: "user" | "assistant"
@@ -52,7 +53,7 @@ function ChatTurn({
 
   if (message.role === "user") {
     return (
-      <div className="w-fit self-end flex rounded-3xl bg-muted px-4 py-3 text-[0.9375rem] text-end leading-relaxed text-foreground justify-end">
+      <div className="w-fit self-end flex rounded-3xl bg-muted px-4 py-3 text-[0.9375rem] text-start leading-relaxed text-foreground justify-end whitespace-pre-wrap">
         {message.content}
       </div>
     )
@@ -82,9 +83,14 @@ export default function Page() {
   const scrollRef = useRef<HTMLDivElement>(null)
   const messageEndRef = useRef<HTMLDivElement>(null)
   const { isGenerating, conversation, generateResponse } = UseAiStore()
+  const { auth, handleGetSession, isSession } = UseAuthStore()
   const { sidebar } = UseSidebarStore()
   const [isTypingOut, setIsTypingOut] = useState(false)
   const isMobile = useIsMobile()
+
+  useEffect(() => {
+    handleGetSession()
+  }, [handleGetSession])
 
   useEffect(() => {
     const el = scrollRef.current
@@ -155,7 +161,10 @@ export default function Page() {
               Hi, I'm <span className="text-[#5B6BD8] lokeya">Luna</span>
             </h1>
             <p className="max-w-sm text-lg text-[#5B5F78] dark:text-[#9599B8]">
-              What can I help you with today?
+             
+              {isSession 
+              ?  <span>What can I help you with today, {auth?.name.trim().split(" ")[0]}?</span>
+            : <span>Ready when you are.</span>}
             </p>
           </div>
         </div>
