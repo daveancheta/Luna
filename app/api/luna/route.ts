@@ -1,8 +1,9 @@
-import { chats } from "@/db/schema"
+import { chats, conversation, session } from "@/db/schema"
 import { db } from "@/index"
 import { generateAnswer } from "@/lib/ai/generate"
 import { auth } from "@/lib/auth"
 import { randomUUID } from "crypto"
+import { eq } from "drizzle-orm"
 import { headers } from "next/headers"
 import { NextRequest, NextResponse } from "next/server"
 import ollama from 'ollama'
@@ -47,6 +48,12 @@ export async function POST(req: NextRequest) {
             });
         }
 
+        await db.insert(conversation).values({
+            id: randomUUID(),
+            title: title.message.content,
+            userId: session.user.id,
+        })
+
         await db.insert(chats).values({
             id: randomUUID(),
             title: title.message.content,
@@ -71,6 +78,42 @@ export async function POST(req: NextRequest) {
             success: true,
             message: response
         }, { status: 200 })
+    } catch (error) {
+        console.log(error)
+
+        return NextResponse.json({
+            success: false,
+            error: error
+        }, { status: 400 })
+    }
+}
+
+export async function GET() {
+    const session = await auth.api.getSession({
+        headers: await headers()
+    })
+
+    if (!session) {
+        return NextResponse.json({
+            success: false,
+            message: "Unauthorized, Please sign in."
+        }, { status: 401 })
+    }
+
+    try {
+        const conversationTitle = await db
+            .select({
+                id: conversation.id,
+                title: conversation.title
+            })
+            .from(conversation)
+            .where(eq(conversation.userId, session.user.id))
+
+        return NextResponse.json({
+            success: true,
+            title: conversationTitle
+        })
+
     } catch (error) {
         console.log(error)
 

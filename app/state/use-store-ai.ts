@@ -4,16 +4,24 @@ interface Assistant {
     role: 'user' | 'assistant';
     content: string;
 }
-1
+
+interface ConversationTitle {
+    id: string;
+    title: string;
+}
+
 interface LunaState {
-    isGenerating: boolean
-    conversation: Assistant[],
-    generateResponse: (prompt: string) => Promise<void>
+    isGenerating: boolean;
+    conversation: Assistant[];
+    title: ConversationTitle[];
+    generateResponse: (prompt: string) => Promise<void>;
+    getConversationTitle: () => Promise<void>;
 }
 
 export const UseAiStore = create<LunaState>((set, get) => ({
     isGenerating: false,
     conversation: [],
+    title: [],
 
     generateResponse: async (prompt: string) => {
         const trimmedPrompt = prompt.trim();
@@ -47,6 +55,18 @@ export const UseAiStore = create<LunaState>((set, get) => ({
             }));
         } finally {
             set({ isGenerating: false });
+        }
+    },
+
+    getConversationTitle: async () => {
+        try {
+            const result = await fetch("/api/luna")
+
+            const res = await result.json()
+
+            set({ title: res.title })
+        } catch (error) {
+            console.log(error)
         }
     }
 }));    

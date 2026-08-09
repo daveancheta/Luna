@@ -22,6 +22,7 @@ import StackIcon from 'tech-stack-icons'
 import { UseAuthStore } from "@/app/state/use-store-auth"
 import NavUserSkeleton from "./nav-user-skeleton"
 import NavUser from "./nav-user"
+import { UseAiStore } from "@/app/state/use-store-ai"
 
 type NavSubItem = {
   title: string
@@ -85,10 +86,15 @@ const data: {
 }
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { signInWithGoogle, auth, handleGetSession, isSession } = UseAuthStore()
+  const { getConversationTitle, title } = UseAiStore()
 
   React.useEffect(() => {
     handleGetSession()
   }, [handleGetSession])
+
+  React.useEffect(() => {
+    getConversationTitle()
+  }, [getConversationTitle])
 
   return (
     <Sidebar {...props} variant="sidebar">
@@ -101,28 +107,42 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
 
       <SidebarContent>
-        {data.navMain.map((item) => (
-          <SidebarGroup key={item.title} className={cn(!auth && item.title === "Recent" && "hidden")}>
-            <SidebarGroupLabel className={cn(item.title === "Getting Started" && "hidden")}>
-              {item.title}
-            </SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {item.items.map((subItem) => (
-                  <SidebarMenuItem key={subItem.title}>
-                    <SidebarMenuButton
-                      isActive={subItem.isActive}
-                      render={<a href={subItem.url} />}
-                    >
-                      {subItem.icon}
-                      <span>{subItem.title}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        ))}
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                >
+                  <CirclePlus />
+                  <span>New Conversation</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+        <SidebarGroup>
+          <SidebarGroupLabel >
+            Recent
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+
+              <SidebarMenuItem>
+                {title.map((title) =>
+                  <SidebarMenuButton
+                    key={title.id}
+                  >
+
+                    <span className="truncate">
+                      {title.title}
+                    </span>
+                  </SidebarMenuButton>
+                )}
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
 
       <SidebarRail />
@@ -132,7 +152,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           : auth && <NavUser name={auth?.name as string} email={auth?.email as string} image={auth?.image as string} />
         }
 
-        {!auth && !isSession && 
+        {!auth && !isSession &&
           <Button
             variant="outline"
             className="bg-white dark:bg-zinc-800 text-gray-800 dark:text-gray-100
