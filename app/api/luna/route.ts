@@ -1,18 +1,15 @@
+import { generateAnswer } from "@/lib/ai/generate"
 import { NextRequest, NextResponse } from "next/server"
-import ollama from 'ollama'
 
 export async function POST(req: NextRequest) {
     const { prompt } = await req.json()
 
     try {
-        const response = await ollama.chat({
-            model: 'llama3.2',
-            messages: [{ role: 'user', content: prompt }],
-        })
-
+        const response = await generateAnswer(prompt)
+        
         return NextResponse.json({
             success: true,
-            message: response.message.content
+            message: response
         }, { status: 200 })
     } catch (error) {
         console.log(error)

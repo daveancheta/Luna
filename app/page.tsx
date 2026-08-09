@@ -112,6 +112,12 @@ export default function Page() {
     }
   };
 
+  const handleSendPrompt = () => {
+    const text = prompt.trim()
+    generateResponse(text)
+    setPrompt("")
+  }
+
   const canSend = prompt.trim().length > 0
 
   return (
@@ -161,10 +167,10 @@ export default function Page() {
               Hi, I'm <span className="text-[#5B6BD8] lokeya">Luna</span>
             </h1>
             <p className="max-w-sm text-lg text-[#5B5F78] dark:text-[#9599B8]">
-             
-              {isSession 
-              ?  <span>What can I help you with today, {auth?.name.trim().split(" ")[0]}?</span>
-            : <span>Ready when you are.</span>}
+
+              {isSession
+                ? <span>What can I help you with today, {auth?.name.trim().split(" ")[0]}?</span>
+                : <span>Ready when you are.</span>}
             </p>
           </div>
         </div>
@@ -230,6 +236,7 @@ export default function Page() {
                       size="icon-sm"
                       className="rounded-full bg-[#5B6BD8] text-primary-foreground hover:bg-[#5B6BD8]/90"
                       aria-label="Send message"
+                      onClick={handleSendPrompt}
                       disabled={isTypingOut || isGenerating}
                     >
                       <ArrowUp className="text-white" />
