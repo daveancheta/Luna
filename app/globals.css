@@ -138,24 +138,29 @@
 }
 
 .scrollable-div {
-  -ms-overflow-style: none; /* IE/Edge legacy */
-  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;
+  /* IE/Edge legacy */
+  scrollbar-width: none;
+  /* Firefox */
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
-    @apply bg-background text-foreground  ;
+    @apply bg-background text-foreground selection:bg-[#0e0e0c] selection:text-[#f5f4f0] dark:selection:bg-[#f5f4f0] dark:selection:text-[#0e0e0c];
     font-family: "Google Sans", sans-serif;
   }
+
   html {
     @apply font-sans;
   }
 }
 
-::view-transition-old(root), ::view-transition-new(root) {
-    animation: none;
-    mix-blend-mode: normal;
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
 }
