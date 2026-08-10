@@ -90,6 +90,12 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
   const [displayTitle, setDisplayTitle] = useState("");
 
   useEffect(() => {
+    if (conversationTitle) {
+      document.title = conversationTitle
+    }
+  }, [conversationTitle])
+
+  useEffect(() => {
     if (!conversationTitle) {
       setDisplayTitle("");
       return;

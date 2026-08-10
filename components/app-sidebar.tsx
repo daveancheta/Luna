@@ -124,7 +124,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarGroupContent>
         </SidebarGroup>
         <SidebarGroup>
-          <SidebarGroupLabel >
+          <SidebarGroupLabel className={cn(title.length < 1 && "hidden")}>
             Recent
           </SidebarGroupLabel>
           <SidebarGroupContent>
