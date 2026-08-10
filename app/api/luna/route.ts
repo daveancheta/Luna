@@ -1,15 +1,15 @@
-import { chats, conversation, session } from "@/db/schema"
+import { conversation, messages } from "@/db/schema"
 import { db } from "@/index"
 import { generateAnswer } from "@/lib/ai/generate"
 import { auth } from "@/lib/auth"
 import { randomUUID } from "crypto"
-import { eq } from "drizzle-orm"
+import { and, eq } from "drizzle-orm"
 import { headers } from "next/headers"
 import { NextRequest, NextResponse } from "next/server"
 import ollama from 'ollama'
 
 export async function POST(req: NextRequest) {
-    const { prompt, title } = await req.json()
+    const { prompt, title, conversation_id } = await req.json()
     const session = await auth.api.getSession({
         headers: await headers()
     })
@@ -22,10 +22,11 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-        let title: any = ""
+        let conversationTitle: any = ""
+        let conversationId = conversation_id
 
         if (!title) {
-            title = await ollama.chat({
+            conversationTitle = await ollama.chat({
                 model: "llama3.2",
                 messages: [
                     {
@@ -46,33 +47,34 @@ export async function POST(req: NextRequest) {
                     },
                 ],
             });
+
+            const [newConversationID] = await db.insert(conversation).values({
+                id: randomUUID(),
+                title: conversationTitle.message.content,
+                userId: session.user.id,
+            })
+                .returning({
+                    id: conversation.id
+                })
+
+            conversationId = newConversationID.id
         }
 
-        await db.insert(conversation).values({
+        await db.insert(messages).values({
             id: randomUUID(),
-            title: title.message.content,
-            userId: session.user.id,
-        })
-
-        await db.insert(chats).values({
-            id: randomUUID(),
-            title: title.message.content,
-            userId: session.user.id,
+            conversationId: conversation_id || conversationId,
             role: "user",
             message: prompt,
         })
 
         const response = await generateAnswer(prompt)
 
-        if (response) {
-            await db.insert(chats).values({
-                id: randomUUID(),
-                title: title.message.content,
-                userId: session.user.id,
-                role: "assistant",
-                message: response as string,
-            })
-        }
+        await db.insert(messages).values({
+            id: randomUUID(),
+            conversationId: conversation_id || conversationId,
+            role: "assistant",
+            message: response as string,
+        })
 
         return NextResponse.json({
             success: true,

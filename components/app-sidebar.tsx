@@ -84,6 +84,7 @@ const data: {
     },
   ],
 }
+
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { signInWithGoogle, auth, handleGetSession, isSession } = UseAuthStore()
   const { getConversationTitle, title } = UseAiStore()

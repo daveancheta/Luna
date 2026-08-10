@@ -96,11 +96,12 @@ export const conversation = pgTable("conversation", {
     .notNull(),
 });
 
-export const chats = pgTable("chats", {
+export const messages = pgTable("messages", {
   id: text("id").primaryKey(),
-  userId: text("user_id").notNull(),
-  title: text("title").notNull(),
-  role: text("role").notNull(),
+  conversationId: text("conversation_id")
+    .notNull()
+    .references(() => conversation.id, { onDelete: "cascade" }),
+  role: text("role",).notNull(),
   message: text("message").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
