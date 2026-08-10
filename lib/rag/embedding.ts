@@ -18,7 +18,7 @@ export async function createEmbeddings() {
         content: chunk,
         embedding: vectors[index],
         metadata: {
-            source: "who-lung-cancer.pdf"
+            source: "Small Cell Lung Cancer Treatment (PDQ®) - NCI.pdf"
         }
     }))
 
