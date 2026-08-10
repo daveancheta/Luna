@@ -16,14 +16,14 @@ import {
 } from "@/components/ui/sidebar"
 import { cn } from "@/lib/utils"
 import { ArrowUp, AudioLines, Mic, Moon, Plus } from "lucide-react"
-import { useEffect, useRef, useState } from "react"
+import { use, useEffect, useRef, useState } from "react"
 import ReactMarkdown from 'react-markdown'
-import { UseAiStore } from "./state/use-store-ai"
-import { UseSidebarStore } from "./state/use-store-sidebar"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { useTypewriter } from "@/hooks/use-typewriter"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { UseAuthStore } from "./state/use-store-auth"
+import { UseAiStore } from "../state/use-store-ai"
+import { UseAuthStore } from "../state/use-store-auth"
+import { UseSidebarStore } from "../state/use-store-sidebar"
 
 type ChatMessage = {
   role: "user" | "assistant"
@@ -77,7 +77,8 @@ function ChatTurn({
   )
 }
 
-export default function Page() {
+export default function Page({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params)
   const [prompt, setPrompt] = useState("")
   const scrollRef = useRef<HTMLDivElement>(null)
   const messageEndRef = useRef<HTMLDivElement>(null)
@@ -106,14 +107,14 @@ export default function Page() {
     if (prompt.trim() && e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       const text = prompt.trim()
-      generateResponse(text, "")
+      generateResponse(text, id)
       setPrompt("")
     }
   };
 
   const handleSendPrompt = () => {
     const text = prompt.trim()
-    generateResponse(text, "")
+    generateResponse(text, id)
     setPrompt("")
   }
 

@@ -4,12 +4,13 @@ import { generateAnswer } from "@/lib/ai/generate"
 import { auth } from "@/lib/auth"
 import { randomUUID } from "crypto"
 import { and, eq } from "drizzle-orm"
+import { unstable_cache } from "next/cache"
 import { headers } from "next/headers"
 import { NextRequest, NextResponse } from "next/server"
 import ollama from 'ollama'
 
 export async function POST(req: NextRequest) {
-    const { prompt, title, conversation_id } = await req.json()
+    const { prompt, conversation_id } = await req.json()
     const session = await auth.api.getSession({
         headers: await headers()
     })
@@ -25,7 +26,7 @@ export async function POST(req: NextRequest) {
         let conversationTitle: any = ""
         let conversationId = conversation_id
 
-        if (!title) {
+        if (!conversation_id) {
             conversationTitle = await ollama.chat({
                 model: "llama3.2",
                 messages: [
@@ -110,6 +111,7 @@ export async function GET() {
             })
             .from(conversation)
             .where(eq(conversation.userId, session.user.id))
+
 
         return NextResponse.json({
             success: true,

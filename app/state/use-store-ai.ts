@@ -14,7 +14,7 @@ interface LunaState {
     isGenerating: boolean;
     conversation: Assistant[];
     title: ConversationTitle[];
-    generateResponse: (prompt: string) => Promise<void>;
+    generateResponse: (prompt: string, conversation_id: string) => Promise<void>;
     getConversationTitle: () => Promise<void>;
 }
 
@@ -23,7 +23,7 @@ export const UseAiStore = create<LunaState>((set, get) => ({
     conversation: [],
     title: [],
 
-    generateResponse: async (prompt: string) => {
+    generateResponse: async (prompt, conversation_id) => {
         const trimmedPrompt = prompt.trim();
         if (!trimmedPrompt) return;
 
@@ -36,7 +36,7 @@ export const UseAiStore = create<LunaState>((set, get) => ({
             const res = await fetch("/api/luna", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ prompt }),
+                body: JSON.stringify({ prompt, conversation_id }),
             })
 
             const generatedResponse = await res.json();
