@@ -14,18 +14,9 @@ import {
   SidebarMenuItem,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
-import { GalleryVerticalEndIcon, ChevronsUpDownIcon, CheckIcon } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip"
-import { Button } from "./ui/button"
 
-export function VersionSwitcher({
-  versions,
-  defaultVersion,
-}: {
-  versions: string[]
-  defaultVersion: string
-}) {
-  const [selectedVersion, setSelectedVersion] = React.useState(defaultVersion)
+export function SidebarHeaderContent() {
   return (
     <SidebarMenu>
       <SidebarMenuItem>

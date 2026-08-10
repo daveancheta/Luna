@@ -1,7 +1,6 @@
 import * as React from "react"
 
 import { SearchForm } from "@/components/search-form"
-import { VersionSwitcher } from "@/components/version-switcher"
 import {
   Sidebar,
   SidebarContent,
@@ -16,7 +15,7 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 import { cn } from "@/lib/utils"
-import { CirclePlus } from "lucide-react"
+import { FileText, Images, Library, PencilLine, Timeline } from "lucide-react"
 import { Button } from "./ui/button"
 import StackIcon from 'tech-stack-icons'
 import { UseAuthStore } from "@/app/state/use-store-auth"
@@ -24,67 +23,7 @@ import NavUserSkeleton from "./nav-user-skeleton"
 import NavUser from "./nav-user"
 import { UseAiStore } from "@/app/state/use-store-ai"
 import Link from "next/link"
-
-type NavSubItem = {
-  title: string
-  url: string
-  icon?: React.ReactNode
-  isActive?: boolean
-}
-
-type NavGroup = {
-  title: string
-  url: string
-  items: NavSubItem[]
-}
-
-// This is sample data.
-const data: {
-  versions: string[]
-  navMain: NavGroup[]
-} = {
-  versions: ["1.0.1", "1.1.0-alpha", "2.0.0-beta1"],
-  navMain: [
-    {
-      title: "Getting Started",
-      url: "#",
-      items: [
-        {
-          title: "New Conversation",
-          url: "#",
-          icon: <CirclePlus />
-        },
-      ],
-    },
-    {
-      title: "Recent",
-      url: "#",
-      items: [
-        {
-          title: "Cancer awareness ribbon color",
-          url: "#",
-        },
-        {
-          title: "Title format identification",
-          url: "#",
-          isActive: true,
-        },
-        {
-          title: "Dashboard layout with sidebar and branch selector",
-          url: "#",
-        },
-        {
-          title: "Advanced project ideas",
-          url: "#",
-        },
-        {
-          title: "Community-focused coding project ideas",
-          url: "#",
-        },
-      ],
-    },
-  ],
-}
+import { SidebarHeaderContent } from "./sidebar-content"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { signInWithGoogle, auth, handleGetSession, isSession } = UseAuthStore()
@@ -98,12 +37,32 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     getConversationTitle()
   }, [getConversationTitle])
 
+  const navMain = [
+    {
+      title: "New Conversation",
+      icon: <PencilLine />
+    },
+    {
+      title: "TimeLine",
+      icon: <Timeline />
+    },
+    {
+      title: "Documents",
+      icon: <FileText />
+    },
+    {
+      title: "Images",
+      icon: <Images />
+    },
+    {
+      title: "Library",
+      icon: <Library />
+    },
+  ]
   return (
     <Sidebar {...props} variant="sidebar">
       <SidebarHeader>
-        <VersionSwitcher
-          versions={data.versions}
-          defaultVersion={data.versions[0]}
+        <SidebarHeaderContent
         />
         <SearchForm />
       </SidebarHeader>
@@ -112,13 +71,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-
               <SidebarMenuItem>
-                <SidebarMenuButton
-                >
-                  <CirclePlus />
-                  <span>New Conversation</span>
-                </SidebarMenuButton>
+                {navMain.map((nav) =>
+                  <SidebarMenuButton
+                  className="cursor-pointer"
+                  >
+                    {nav.icon}
+                    <span>{nav.title}</span>
+                  </SidebarMenuButton>
+                )
+                }
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
