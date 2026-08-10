@@ -21,9 +21,9 @@ import ReactMarkdown from 'react-markdown'
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { useTypewriter } from "@/hooks/use-typewriter"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { UseAiStore } from "../state/use-store-ai"
-import { UseAuthStore } from "../state/use-store-auth"
-import { UseSidebarStore } from "../state/use-store-sidebar"
+import { UseAiStore } from "../../state/use-store-ai"
+import { UseAuthStore } from "../../state/use-store-auth"
+import { UseSidebarStore } from "../../state/use-store-sidebar"
 
 type ChatMessage = {
   role: "user" | "assistant"
@@ -82,11 +82,34 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
   const [prompt, setPrompt] = useState("")
   const scrollRef = useRef<HTMLDivElement>(null)
   const messageEndRef = useRef<HTMLDivElement>(null)
-  const { isGenerating, conversation, generateResponse } = UseAiStore()
+  const { isGenerating, conversation, generateResponse, conversationTitle } = UseAiStore()
   const { auth, handleGetSession, isSession } = UseAuthStore()
   const { sidebar } = UseSidebarStore()
   const [isTypingOut, setIsTypingOut] = useState(false)
   const isMobile = useIsMobile()
+  const [displayTitle, setDisplayTitle] = useState("");
+
+  useEffect(() => {
+    if (!conversationTitle) {
+      setDisplayTitle("");
+      return;
+    }
+
+    setDisplayTitle("");
+
+    let index = 0;
+
+    const interval = setInterval(() => {
+      setDisplayTitle(conversationTitle.slice(0, index + 1));
+      index++;
+
+      if (index >= conversationTitle.length) {
+        clearInterval(interval);
+      }
+    }, 50);
+
+    return () => clearInterval(interval);
+  }, [conversationTitle]);
 
   useEffect(() => {
     handleGetSession(false)
@@ -148,7 +171,7 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
             </div>
           }
           <h1 className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
-            Cancer awareness ribbon color
+            {displayTitle}
           </h1>
           <div className="w-8 shrink-0" aria-hidden />
         </header>
@@ -189,7 +212,6 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
           )}
           <div ref={messageEndRef} />
         </div>
-
 
         <div className="shrink-0 px-4 pb-5 pt-2">
           <div className="mx-auto w-full max-w-3xl">

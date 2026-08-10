@@ -1,3 +1,4 @@
+import { generateTitle } from "@/lib/ai/generate-title";
 import { create } from "zustand";
 
 interface Assistant {
@@ -14,14 +15,16 @@ interface LunaState {
     isGenerating: boolean;
     conversation: Assistant[];
     title: ConversationTitle[];
+    conversationTitle: string | null;
     generateResponse: (prompt: string, conversation_id: string) => Promise<void>;
     getConversationTitle: () => Promise<void>;
 }
 
-export const UseAiStore = create<LunaState>((set, get) => ({
+export const UseAiStore = create<LunaState>((set) => ({
     isGenerating: false,
     conversation: [],
     title: [],
+    conversationTitle: null,
 
     generateResponse: async (prompt, conversation_id) => {
         const trimmedPrompt = prompt.trim();
@@ -32,15 +35,18 @@ export const UseAiStore = create<LunaState>((set, get) => ({
             conversation: [...state.conversation, { role: 'user', content: trimmedPrompt }]
         }))
 
+        const generatedTitle = await generateTitle(prompt)
+        set({ conversationTitle: generatedTitle as string })
+
         try {
-            const res = await fetch("/api/luna", {
+            const result = await fetch("/api/luna", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ prompt, conversation_id }),
+                body: JSON.stringify({ prompt, conversation_id, generatedTitle }),
             })
 
-            const generatedResponse = await res.json();
-            const text = generatedResponse.message;
+            const res = await result.json();
+            const text = res.message;
 
             set((state) => ({
                 isGenerating: false,

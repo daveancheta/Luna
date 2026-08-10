@@ -24,6 +24,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { useTypewriter } from "@/hooks/use-typewriter"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { UseAuthStore } from "./state/use-store-auth"
+import { useRouter } from "next/navigation"
 
 type ChatMessage = {
   role: "user" | "assistant"
@@ -86,6 +87,8 @@ export default function Page() {
   const { sidebar } = UseSidebarStore()
   const [isTypingOut, setIsTypingOut] = useState(false)
   const isMobile = useIsMobile()
+  const randomId = crypto.randomUUID()
+  const router = useRouter()
 
   useEffect(() => {
     handleGetSession(false)
@@ -106,15 +109,19 @@ export default function Page() {
     if (prompt.trim() && e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       const text = prompt.trim()
-      generateResponse(text, "")
+      generateResponse(text, randomId)
       setPrompt("")
+
+      router.push(`/chat/${randomId}`)
     }
   };
 
   const handleSendPrompt = () => {
     const text = prompt.trim()
-    generateResponse(text, "")
+    generateResponse(text, randomId)
     setPrompt("")
+
+    router.push(`/chat/${randomId}`)
   }
 
   const canSend = prompt.trim().length > 0
@@ -147,7 +154,7 @@ export default function Page() {
             </div>
           }
           <h1 className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
-            Cancer awareness ribbon color
+            New Conversation
           </h1>
           <div className="w-8 shrink-0" aria-hidden />
         </header>
@@ -188,7 +195,6 @@ export default function Page() {
           )}
           <div ref={messageEndRef} />
         </div>
-
 
         <div className="shrink-0 px-4 pb-5 pt-2">
           <div className="mx-auto w-full max-w-3xl">

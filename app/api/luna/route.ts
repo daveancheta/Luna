@@ -4,14 +4,13 @@ import { classifyQuestion } from "@/lib/ai/classify"
 import { generateAnswer } from "@/lib/ai/generate"
 import { auth } from "@/lib/auth"
 import { randomUUID } from "crypto"
-import { and, eq } from "drizzle-orm"
-import { unstable_cache } from "next/cache"
+import { eq } from "drizzle-orm"
 import { headers } from "next/headers"
 import { NextRequest, NextResponse } from "next/server"
 import ollama from 'ollama'
 
 export async function POST(req: NextRequest) {
-    const { prompt, conversation_id } = await req.json()
+    const { prompt, conversation_id, generatedTitle } = await req.json()
     const session = await auth.api.getSession({
         headers: await headers()
     })
@@ -26,35 +25,18 @@ export async function POST(req: NextRequest) {
     try {
         const classifier: any = await classifyQuestion(prompt)
 
-        let conversationTitle: any = ""
         let conversationId = conversation_id
 
-        if (!conversation_id) {
-            conversationTitle = await ollama.chat({
-                model: "llama3.2",
-                messages: [
-                    {
-                        role: "user",
-                        content: `
-              Generate a short title for the following message.
-              
-              Rules:
-              - Maximum 15 words
-              - Return only the title
-              - Do not include quotation marks
-              - Do not include "Title:"
-              - Do not add any explanation
-              
-              Message:
-              ${prompt}
-                    `.trim(),
-                    },
-                ],
-            });
+        const isConversationIdExist = await db
+            .select({ conversationId: conversation.id })
+            .from(conversation)
+            .where(eq(conversation.id, conversation_id))
+            .limit(1)
 
+        if (isConversationIdExist.length === 0) {
             const [newConversationID] = await db.insert(conversation).values({
-                id: randomUUID(),
-                title: conversationTitle.message.content,
+                id: conversation_id,
+                title: generatedTitle,
                 userId: session.user.id,
             })
                 .returning({
@@ -88,7 +70,7 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json({
             success: true,
-            message: response
+            message: response,
         }, { status: 200 })
 
     } catch (error) {
