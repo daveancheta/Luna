@@ -1,5 +1,6 @@
 import { conversation, messages } from "@/db/schema"
 import { db } from "@/index"
+import { classifyQuestion } from "@/lib/ai/classify"
 import { generateAnswer } from "@/lib/ai/generate"
 import { auth } from "@/lib/auth"
 import { randomUUID } from "crypto"
@@ -23,6 +24,8 @@ export async function POST(req: NextRequest) {
     }
 
     try {
+        const classifier: any = await classifyQuestion(prompt)
+
         let conversationTitle: any = ""
         let conversationId = conversation_id
 
@@ -68,7 +71,13 @@ export async function POST(req: NextRequest) {
             message: prompt,
         })
 
-        const response = await generateAnswer(prompt)
+        let response: any = ""
+
+        if (classifier.toLowerCase().includes("true")) {
+            response = await generateAnswer(prompt)
+        } else {
+            response = "I'm Luna, a lung cancer education assistant. I can only help with questions related to lung cancer, including its symptoms, risk factors, diagnosis, staging, treatment, and related medical topics. Please feel free to ask me a lung cancer-related question.";
+        }
 
         await db.insert(messages).values({
             id: randomUUID(),
@@ -81,6 +90,7 @@ export async function POST(req: NextRequest) {
             success: true,
             message: response
         }, { status: 200 })
+
     } catch (error) {
         console.log(error)
 
