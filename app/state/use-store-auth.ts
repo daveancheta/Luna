@@ -16,7 +16,7 @@ interface AuthState {
     isSession: boolean;
     auth: User | null;
     signInWithGoogle: () => Promise<void>;
-    handleGetSession: () => Promise<void>;
+    handleGetSession: (isLoading: boolean) => Promise<void>;
 }
 
 export const UseAuthStore = create<AuthState>((set) => ({
@@ -29,8 +29,10 @@ export const UseAuthStore = create<AuthState>((set) => ({
         });
     },
 
-    handleGetSession: async () => {
-        set({ isSession: true })
+    handleGetSession: async (isLoading) => {
+        if (isLoading) {
+            set({ isSession: true })
+        }
 
         try {
             const result = await fetch("/api/auth/session")

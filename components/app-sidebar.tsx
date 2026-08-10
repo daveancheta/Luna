@@ -91,7 +91,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { getConversationTitle, title } = UseAiStore()
 
   React.useEffect(() => {
-    handleGetSession()
+    handleGetSession(false)
   }, [handleGetSession])
 
   React.useEffect(() => {
@@ -135,8 +135,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <SidebarMenuButton
                     key={title.id}
                   >
-
-                    <Link href={title.id}>
+                    <Link href={title.id} className="flex min-w-0 flex-1 items-center">
                       <span className="truncate">
                         {title.title}
                       </span>

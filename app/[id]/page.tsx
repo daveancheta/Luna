@@ -89,7 +89,7 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
   const isMobile = useIsMobile()
 
   useEffect(() => {
-    handleGetSession()
+    handleGetSession(false)
   }, [handleGetSession])
 
   useEffect(() => {

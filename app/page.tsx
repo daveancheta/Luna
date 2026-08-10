@@ -88,7 +88,7 @@ export default function Page() {
   const isMobile = useIsMobile()
 
   useEffect(() => {
-    handleGetSession()
+    handleGetSession(false)
   }, [handleGetSession])
 
   useEffect(() => {
