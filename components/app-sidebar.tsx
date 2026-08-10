@@ -23,6 +23,7 @@ import { UseAuthStore } from "@/app/state/use-store-auth"
 import NavUserSkeleton from "./nav-user-skeleton"
 import NavUser from "./nav-user"
 import { UseAiStore } from "@/app/state/use-store-ai"
+import Link from "next/link"
 
 type NavSubItem = {
   title: string
@@ -135,9 +136,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     key={title.id}
                   >
 
-                    <span className="truncate">
-                      {title.title}
-                    </span>
+                    <Link href={title.id}>
+                      <span className="truncate">
+                        {title.title}
+                      </span>
+                    </Link>
                   </SidebarMenuButton>
                 )}
               </SidebarMenuItem>
