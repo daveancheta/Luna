@@ -15,7 +15,7 @@ export async function searchDocuments(
       1 - (embedding <=> ${vector}::vector) AS similarity
     FROM documents
     ORDER BY embedding <=> ${vector}::vector
-    LIMIT 5;
+    LIMIT 50;
   `);
 
   return results;
