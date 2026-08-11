@@ -23,7 +23,7 @@ import NavUserSkeleton from "./nav-user-skeleton"
 import NavUser from "./nav-user"
 import { UseAiStore } from "@/app/state/use-store-ai"
 import Link from "next/link"
-import { SidebarHeaderContent } from "./sidebar-content"
+import { SidebarHeaderContent } from "./sidebar-header-content"
 import { usePathname } from "next/navigation"
 
 const TypingText = ({ text }: { text: string }) => {
@@ -152,7 +152,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarContent>
 
       <SidebarRail />
-      <SidebarFooter className="mb-2 border-t p-4">
+      <SidebarFooter className="mb-2 border-t">
         {isSession
           ? <NavUserSkeleton />
           : auth && <NavUser name={auth?.name as string} email={auth?.email as string} image={auth?.image as string} />

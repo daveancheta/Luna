@@ -1,269 +1,85 @@
 "use client"
 
-import { AppSidebar } from "@/components/app-sidebar"
 import { Button } from "@/components/ui/button"
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupButton,
-  InputGroupTextarea,
-} from "@/components/ui/input-group"
-import { Separator } from "@/components/ui/separator"
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar"
-import { cn } from "@/lib/utils"
-import { ArrowUp, AudioLines, Mic, Moon, Plus } from "lucide-react"
-import { useEffect, useRef, useState } from "react"
-import ReactMarkdown from 'react-markdown'
-import { UseAiStore } from "./state/use-store-ai"
-import { UseSidebarStore } from "./state/use-store-sidebar"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { useTypewriter } from "@/hooks/use-typewriter"
-import { useIsMobile } from "@/hooks/use-mobile"
 import { UseAuthStore } from "./state/use-store-auth"
-import { useRouter } from "next/navigation"
+import StackIcon from "tech-stack-icons"
+import Image from "next/image"
+import { useEffect } from "react"
+import { redirect } from "next/navigation"
 
-type ChatMessage = {
-  role: "user" | "assistant"
-  content: string
-}
-
-function ChatTurn({
-  message,
-  isLast,
-  onTypingChange,
-}: {
-  message: ChatMessage
-  isLast: boolean
-  onTypingChange?: (isTyping: boolean) => void
-}) {
-  const { displayed, isTyping } = useTypewriter(
-    message.content,
-    isLast && message.role === "assistant"
-  )
+export default function LandingPage() {
+  const { signInWithGoogle, isLoading, handleGetSession, auth } = UseAuthStore()
 
   useEffect(() => {
-    if (isLast && message.role === "assistant") {
-      onTypingChange?.(isTyping)
-    }
-  }, [isTyping, isLast, message.role, onTypingChange])
-
-  if (message.role === "user") {
-    return (
-      <div className="w-fit self-end flex rounded-3xl bg-muted px-4 py-3 text-[0.9375rem] text-start leading-relaxed text-foreground justify-end whitespace-pre-wrap">
-        {message.content}
-      </div>
-    )
-  }
-
-  return (
-    <div className="flex gap-4">
-      <div className="min-w-0 flex-1 pt-0.5 text-[0.9375rem] leading-[1.65] text-foreground">
-        <ReactMarkdown
-          components={{
-            ol: ({ children }) => <ol className="list-decimal pl-5 space-y-1 my-2">{children}</ol>,
-            ul: ({ children }) => <ul className="list-disc pl-5 space-y-1 my-2">{children}</ul>,
-            li: ({ children }) => <li className="pl-1">{children}</li>,
-            p: ({ children }) => <p className="mb-3">{children}</p>,
-            strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
-          }}
-        >
-          {message.role === "assistant" ? displayed : message.content}
-        </ReactMarkdown>
-      </div>
-    </div>
-  )
-}
-
-export default function Page() {
-  const [prompt, setPrompt] = useState("")
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const messageEndRef = useRef<HTMLDivElement>(null)
-  const { isGenerating, conversation, generateResponse } = UseAiStore()
-  const { auth, handleGetSession, isSession } = UseAuthStore()
-  const { sidebar } = UseSidebarStore()
-  const [isTypingOut, setIsTypingOut] = useState(false)
-  const isMobile = useIsMobile()
-  const randomId = crypto.randomUUID()
-  const router = useRouter()
-
-  useEffect(() => {
-    handleGetSession(false)
+    handleGetSession(true)
   }, [handleGetSession])
 
-  useEffect(() => {
-    const el = scrollRef.current
-    if (el) {
-      el.scrollTop = el.scrollHeight
-    }
-  }, [])
-
-  useEffect(() => {
-    messageEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [isGenerating, !isTypingOut])
-
-  const handleKeyEnter = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (prompt.trim() && e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      const text = prompt.trim()
-      generateResponse(text, randomId)
-      setPrompt("")
-
-      router.push(`/chat/${randomId}`)
-    }
-  };
-
-  const handleSendPrompt = () => {
-    const text = prompt.trim()
-    generateResponse(text, randomId)
-    setPrompt("")
-
-    router.push(`/chat/${randomId}`)
-  }
-
-  const canSend = prompt.trim().length > 0
+  if (auth) redirect("/new")
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset className="flex h-svh flex-col overflow-hidden bg-background">
-        <header className="flex h-12 shrink-0 items-center gap-2 border-b border-border px-3">
-          {!isMobile && sidebar === "expanded" &&
-            <div className="flex flex-row gap-2 items-center">
-              <Tooltip >
-                <TooltipTrigger render={<SidebarTrigger className="-ml-1" />} />
-                <TooltipContent side={"right"}>
-                  <p>Expand</p>
-                </TooltipContent>
-              </Tooltip>
-              <Separator orientation="vertical" className="mr-1 data-vertical:h-4 data-vertical:self-auto" />
-            </div>
-          }
-          {isMobile &&
-            <div className="flex flex-row gap-2 items-center">
-              <Tooltip >
-                <TooltipTrigger render={<SidebarTrigger className="-ml-1" />} />
-                <TooltipContent side={"right"}>
-                  <p>Expand</p>
-                </TooltipContent>
-              </Tooltip>
-              <Separator orientation="vertical" className="mr-1 data-vertical:h-4 data-vertical:self-auto" />
-            </div>
-          }
-          <h1 className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
-            New Conversation
+    <div className="flex h-svh w-full flex-col overflow-hidden bg-background lg:flex-row">
+      <div className="relative h-[38vh] w-full shrink-0 overflow-hidden bg-[#1C1D2E] lg:h-full lg:flex-1">
+        <video
+          className="absolute inset-0 h-full w-full object-cover"
+          src="/videos/luna-demo.mp4"
+          poster="/images/luna-poster.jpg"
+          autoPlay
+          muted
+          loop
+          playsInline
+          aria-hidden="true"
+        />
+        <div className="absolute inset-0 bg-linear-to-t from-[#1C1D2E]/85 via-[#1C1D2E]/10 to-[#1C1D2E]/40" />
+
+        <div className="absolute left-5 top-5 flex items-center gap-2 lg:left-8 lg:top-8">
+          <Image src="/luna_without_bg.png" alt="luna" height={50} width={50} />
+          <span className="font-medium lokeya text-xl text-[#5B6BD8]">Luna</span>
+        </div>
+
+        <div className="absolute bottom-8 left-5 right-5 hidden max-w-md lg:left-8 lg:block">
+          <h2 className="text-3xl font-medium leading-tight tracking-tight text-white xl:text-4xl">
+            An AI that actually listens
+          </h2>
+          <p className="mt-3 text-[0.9375rem] text-white/80">
+            Upload your medical records, get AI-generated summaries, and ask
+            questions about your care — Luna organizes it all and is here
+            whenever you need her.
+          </p>
+        </div>
+      </div>
+
+      <div className="flex flex-1 flex-col items-center justify-center px-6 py-8 lg:flex-none lg:w-110 lg:border-l lg:border-border xl:w-120">
+        <div className="w-full max-w-[320px]">
+          <h1 className="text-2xl font-medium tracking-tight text-[#1C1D2E] dark:text-[#EDEBF9]">
+            Welcome to Luna
           </h1>
-          <div className="w-8 shrink-0" aria-hidden />
-        </header>
+          <p className="mt-2 text-[0.9375rem] text-[#5B5F78] dark:text-[#9599B8]">
+            Sign in to continue to your workspace.
+          </p>
 
-        <div
-          ref={scrollRef}
-          className={cn(conversation.length > 0 && "hidden")}
-        >
-          <div className="mx-auto flex min-h-[70vh] w-full max-w-3xl flex-col items-center justify-center gap-4 px-4 py-10 text-center md:px-6">
-            <div className="relative flex h-12 w-12 items-center justify-center">
-              <div />
-              <Moon className="absolute inset-0 rounded-full text-[#5B6BD8] fill-[#5B6BD8]" />
-            </div>
+          <Button
+            size="lg"
+            disabled={isLoading}
+            onClick={signInWithGoogle}
+            className="mt-8 flex h-12 w-full items-center justify-center gap-3 rounded-full bg-white text-[0.9375rem] font-medium text-[#1C1D2E] shadow-sm ring-1 ring-border hover:bg-gray-50"
+          >
+            <StackIcon name="google" className="size-4" />
+            {isLoading ? "Signing in..." : "Continue with Google"}
+          </Button>
 
-            <h1 className="text-4xl font-medium tracking-tight text-[#1C1D2E] dark:text-[#EDEBF9] md:text-5xl">
-              Hi, I'm <span className="text-[#5B6BD8] lokeya">Luna</span>
-            </h1>
-            <p className="max-w-sm text-lg text-[#5B5F78] dark:text-[#9599B8]">
-
-              {isSession
-                ? <span>What can I help you with today, {auth?.name.trim().split(" ")[0]}?</span>
-                : <span>Ready when you are.</span>}
-            </p>
-          </div>
+          <p className="mt-8 text-center text-xs leading-relaxed text-[#5B5F78] dark:text-[#9599B8]">
+            By continuing, you agree to Luna&apos;s{" "}
+            <a href="/terms" className="underline underline-offset-2 hover:text-[#1C1D2E] dark:hover:text-[#EDEBF9]">
+              Terms of Service
+            </a>{" "}
+            and{" "}
+            <a href="/privacy" className="underline underline-offset-2 hover:text-[#1C1D2E] dark:hover:text-[#EDEBF9]">
+              Privacy Policy
+            </a>
+            .
+          </p>
         </div>
-
-        <div className={cn(conversation.length === 0 ? "hidden" : "flex-1 overflow-y-auto overscroll-contain scrollable-div")}>
-          <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 py-10 md:px-6">
-            {conversation.map((message, index) => (
-              <ChatTurn message={message} key={index} isLast={index === conversation.length - 1} onTypingChange={setIsTypingOut} />
-            ))}
-          </div>
-          {isGenerating && (
-            <div className="flex items-center gap-2 mx-auto w-full max-w-3xl px-4 py-3 md:px-6">
-              <Moon className="rounded-full text-[#5B6BD8] fill-[#5B6BD8] size-4 animate-spin" />
-              <span className="text-sm text-[#5B6BD8]/90">Thinking</span>
-            </div>
-          )}
-          <div ref={messageEndRef} />
-        </div>
-
-        <div className="shrink-0 px-4 pb-5 pt-2">
-          <div className="mx-auto w-full max-w-3xl">
-            <InputGroup
-              className={cn(
-                "rounded-[1.75rem] border-border bg-card shadow-sm",
-                "has-[[data-slot=input-group-control]:focus-visible]:border-ring has-[[data-slot=input-group-control]:focus-visible]:ring-3 has-[[data-slot=input-group-control]:focus-visible]:ring-ring/30"
-              )}
-            >
-              <InputGroupTextarea
-                id="chat-composer"
-                placeholder="Reply to Luna..."
-                rows={1}
-                value={prompt}
-                className="min-h-12 max-h-80 resize-none px-4 pt-4 pb-2 text-[0.9375rem] placeholder:text-muted-foreground scrollable-div"
-                onChange={(e) => setPrompt(e.target.value)}
-                onKeyDown={handleKeyEnter}
-              />
-              <InputGroupAddon
-                align="block-end"
-                className="w-full px-3 pb-3 pt-0"
-              >
-                <InputGroupButton
-                  aria-label="Add attachment"
-                  className="text-muted-foreground hover:text-foreground"
-                  disabled={isTypingOut || isGenerating}
-                >
-                  <Plus />
-                </InputGroupButton>
-                <div className="ml-auto flex items-center gap-1">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-sm"
-                    className="text-muted-foreground hover:text-foreground"
-                    aria-label="Voice input"
-                    disabled={isTypingOut || isGenerating}
-                  >
-                    <Mic />
-                  </Button>
-                  {canSend ? (
-                    <Button
-                      type="submit"
-                      size="icon-sm"
-                      className="rounded-full bg-[#5B6BD8] text-primary-foreground hover:bg-[#5B6BD8]/90"
-                      aria-label="Send message"
-                      onClick={handleSendPrompt}
-                      disabled={isTypingOut || isGenerating}
-                    >
-                      <ArrowUp className="text-white" />
-                    </Button>
-                  ) : (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon-sm"
-                      className="text-muted-foreground hover:text-foreground"
-                      aria-label="Audio mode"
-                      disabled={isTypingOut || isGenerating}
-                    >
-                      <AudioLines />
-                    </Button>
-                  )}
-                </div>
-              </InputGroupAddon>
-            </InputGroup>
-          </div>
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+      </div>
+    </div>
   )
 }

@@ -7,9 +7,9 @@ import { Switch } from './ui/switch'
 import { useInitials } from '@/hooks/use-initials'
 import { ChevronsUpDownIcon, Sun, Moon, Settings, LogOut } from 'lucide-react'
 import { useTheme } from "next-themes"
-import { cn } from '@/lib/utils'
 import { Button } from './ui/button'
 import { AnimatedThemeToggler } from './ui/animated-theme-toggler'
+import { UseAuthStore } from '@/app/state/use-store-auth'
 
 function NavUser({ name, email, image, onSettings, onLogout }:
     {
@@ -24,6 +24,7 @@ function NavUser({ name, email, image, onSettings, onLogout }:
     const [open, setOpen] = useState(false)
     const containerRef = useRef<HTMLDivElement>(null)
     const isDark = theme === "dark"
+    const { handleSignOutValidation } = UseAuthStore()
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -53,7 +54,7 @@ function NavUser({ name, email, image, onSettings, onLogout }:
             </div>
 
             {open && (
-                <div className="absolute bottom-full left-0 z-50 mb-2 w-60 overflow-hidden rounded-xl border border-border bg-popover text-popover-foreground shadow-lg">
+                <div className="absolute bottom-full left-0 z-50 mb-3 w-60 overflow-hidden rounded-xl border border-border bg-popover text-popover-foreground shadow-lg">
                     <div className="flex items-center gap-3 p-3">
                         <Avatar className="h-9 w-9 rounded-full">
                             <AvatarImage src={image} alt={name} />
@@ -95,7 +96,7 @@ function NavUser({ name, email, image, onSettings, onLogout }:
                         <Button
                             variant={"ghost"}
                             onClick={() => {
-                                onLogout?.()
+                                handleSignOutValidation()
                                 setOpen(false)
                             }}
                             className="flex-1 w-full justify-start"
