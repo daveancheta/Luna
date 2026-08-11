@@ -72,9 +72,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                {navMain.map((nav) =>
+                {navMain.map((nav, index) =>
                   <SidebarMenuButton
                   className="cursor-pointer"
+                  key={index}
                   >
                     {nav.icon}
                     <span>{nav.title}</span>
