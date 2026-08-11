@@ -4,10 +4,9 @@ import { classifyQuestion } from "@/lib/ai/classify"
 import { generateAnswer } from "@/lib/ai/generate"
 import { auth } from "@/lib/auth"
 import { randomUUID } from "crypto"
-import { eq } from "drizzle-orm"
+import { desc, eq } from "drizzle-orm"
 import { headers } from "next/headers"
 import { NextRequest, NextResponse } from "next/server"
-import ollama from 'ollama'
 
 export async function POST(req: NextRequest) {
     const { prompt, conversation_id, generatedTitle } = await req.json()
@@ -103,6 +102,7 @@ export async function GET() {
             })
             .from(conversation)
             .where(eq(conversation.userId, session.user.id))
+            .orderBy(desc(conversation.createdAt))
 
 
         return NextResponse.json({

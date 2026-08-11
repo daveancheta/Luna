@@ -24,10 +24,35 @@ import NavUser from "./nav-user"
 import { UseAiStore } from "@/app/state/use-store-ai"
 import Link from "next/link"
 import { SidebarHeaderContent } from "./sidebar-content"
+import { usePathname } from "next/navigation"
+
+const TypingText = ({ text }: { text: string }) => {
+  const [displayText, setDisplayText] = React.useState("")
+
+  React.useEffect(() => {
+    let index = 0
+
+    const interval = setInterval(() => {
+      setDisplayText(text.slice(0, index + 1))
+      index++
+
+      if (index >= text.length) {
+        clearInterval(interval)
+      }
+    }, 50)
+
+    return () => clearInterval(interval)
+  }, [text])
+
+  return <span className="truncate">{displayText}</span>
+}
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { signInWithGoogle, auth, handleGetSession, isSession } = UseAuthStore()
   const { getConversationTitle, title } = UseAiStore()
+  const pathname = usePathname()
+  const isHomePage = pathname === "/"
+  const id = pathname.split("/chat/")[1]
 
   React.useEffect(() => {
     handleGetSession(false)
@@ -40,23 +65,28 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const navMain = [
     {
       title: "New Conversation",
-      icon: <PencilLine />
+      icon: <PencilLine />,
+      url: "/"
     },
     {
       title: "TimeLine",
-      icon: <Timeline />
+      icon: <Timeline />,
+      url: "/"
     },
     {
       title: "Documents",
-      icon: <FileText />
+      icon: <FileText />,
+      url: "/"
     },
     {
       title: "Images",
-      icon: <Images />
+      icon: <Images />,
+      url: "/"
     },
     {
       title: "Library",
-      icon: <Library />
+      icon: <Library />,
+      url: "/"
     },
   ]
   return (
@@ -74,11 +104,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <SidebarMenuItem>
                 {navMain.map((nav, index) =>
                   <SidebarMenuButton
-                  className="cursor-pointer"
-                  key={index}
+                    className="cursor-pointer"
+                    key={index}
                   >
-                    {nav.icon}
-                    <span>{nav.title}</span>
+                    <Link href={nav.url} className="flex min-w-0 flex-1 items-center gap-2">
+                      {nav.icon}
+                      <span>{nav.title}</span>
+                    </Link>
                   </SidebarMenuButton>
                 )
                 }
@@ -92,19 +124,27 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-
               <SidebarMenuItem>
-                {title.map((title) =>
-                  <SidebarMenuButton
-                    key={title.id}
-                  >
-                    <Link href={title.id} className="flex min-w-0 flex-1 items-center">
-                      <span className="truncate">
-                        {title.title}
-                      </span>
+                {title.map((item, index) => (
+                  <SidebarMenuButton key={item.id}>
+                    <Link
+                      href={`/chat/${item.id}`}
+                      className="flex min-w-0 flex-1 items-center"
+                    >
+                      {isHomePage
+                        ? <span className="truncate">
+                          {item.title}
+                        </span>
+                        : item.id === id ? (
+                          <TypingText text={item.title} />
+                        ) : (
+                          <span className="truncate">
+                            {item.title}
+                          </span>
+                        )}
                     </Link>
                   </SidebarMenuButton>
-                )}
+                ))}
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>

@@ -27,6 +27,7 @@ export const UseAiStore = create<LunaState>((set) => ({
     conversationTitle: null,
 
     generateResponse: async (prompt, conversation_id) => {
+        const tempId = `temp-${Date.now()}`
         const trimmedPrompt = prompt.trim();
         if (!trimmedPrompt) return;
 
@@ -37,6 +38,10 @@ export const UseAiStore = create<LunaState>((set) => ({
 
         const generatedTitle = await generateTitle(prompt)
         set({ conversationTitle: generatedTitle as string })
+
+        set((state) => ({
+            title: [...state.title, { id: tempId, title: generatedTitle as string }]
+        }))
 
         try {
             const result = await fetch("/api/luna", {
