@@ -4,7 +4,7 @@ import { classifyQuestion } from "@/lib/ai/classify"
 import { generateAnswer } from "@/lib/ai/generate"
 import { auth } from "@/lib/auth"
 import { randomUUID } from "crypto"
-import { desc, eq } from "drizzle-orm"
+import { asc, desc, eq } from "drizzle-orm"
 import { headers } from "next/headers"
 import { NextRequest, NextResponse } from "next/server"
 
@@ -98,11 +98,12 @@ export async function GET() {
         const conversationTitle = await db
             .select({
                 id: conversation.id,
-                title: conversation.title
+                title: conversation.title,
+                created_at: conversation.createdAt
             })
             .from(conversation)
             .where(eq(conversation.userId, session.user.id))
-            .orderBy(desc(conversation.createdAt))
+            .orderBy(asc(conversation.createdAt))
 
 
         return NextResponse.json({

@@ -9,6 +9,7 @@ interface Assistant {
 interface ConversationTitle {
     id: string;
     title: string;
+    created_at: Date;
 }
 
 interface LunaState {
@@ -19,6 +20,8 @@ interface LunaState {
     conversationTitle: string | null;
     selectedTitle: string | null;
     setSelectedTitle: (selectedTitle: string) => void;
+    selectedConversationId: string | null;
+    setSelectedConversationId: (selectedConversationId: string) => void;
     generateResponse: (prompt: string, conversation_id: string, title: string) => Promise<void>;
     getConversationTitle: () => Promise<void>;
     setConversationToEmpty: () => Promise<void>;
@@ -32,27 +35,31 @@ export const UseAiStore = create<LunaState>((set, get) => ({
     title: [],
     conversationTitle: null,
     selectedTitle: null,
+    selectedConversationId: null,
 
     setSelectedTitle: (selectedTitle: string) => set({ selectedTitle: selectedTitle }),
+    setSelectedConversationId: (selectedConversationId: string) => set({ selectedConversationId: selectedConversationId }),
 
     generateResponse: async (prompt, conversation_id, title) => {
-        const tempId = `temp-${Date.now()}`
         const trimmedPrompt = prompt.trim();
         if (!trimmedPrompt) return;
+        const { setSelectedConversationId } = get()
+
+        setSelectedConversationId(conversation_id)
 
         set((state) => ({
             isGenerating: true,
             conversation: [...state.conversation, { role: 'user', message: trimmedPrompt }]
         }))
 
-        let generatedTitle: any = ""
+        let generatedTitle: any = "";
 
         if (!title) {
             generatedTitle = await generateTitle(prompt)
             set({ conversationTitle: generatedTitle as string })
 
             set((state) => ({
-                title: [...state.title, { id: tempId, title: generatedTitle as string }]
+                title: [...state.title, { id: conversation_id, title: generatedTitle as string, created_at: new Date() }]
             }))
         }
 

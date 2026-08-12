@@ -49,7 +49,7 @@ const TypingText = ({ text }: { text: string }) => {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { signInWithGoogle, auth, handleGetSession, isSession } = UseAuthStore()
-  const { getConversationTitle, title, setConversationToEmpty, setSelectedTitle} = UseAiStore()
+  const { getConversationTitle, title, setConversationToEmpty, setSelectedTitle, selectedConversationId } = UseAiStore()
   const pathname = usePathname()
   const isHomePage = pathname === "/"
   const id = pathname.split("/chat/")[1]
@@ -127,23 +127,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                {title.map((item) => (
-                  <SidebarMenuButton key={item.id}>
+                {[...title].reverse().map((item) => (
+                  <SidebarMenuButton key={item.id} onClick={() => { setSelectedTitle(item.title) }}>
                     <Link
                       href={`/chat/${item.id}`}
                       className="flex min-w-0 flex-1 items-center"
                     >
-                      {isHomePage
-                        ? <span className="truncate">
+                      {item.id === selectedConversationId ? (
+                        <TypingText text={item.title} />
+                      ) : (
+                        <span className="truncate">
                           {item.title}
                         </span>
-                        : item.id === id || item.id === tempId ? (
-                          <TypingText text={item.title} />
-                        ) : (
-                          <span className="truncate">
-                            {item.title}
-                          </span>
-                        )}
+                      )}
                     </Link>
                   </SidebarMenuButton>
                 ))}
