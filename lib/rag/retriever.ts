@@ -8,5 +8,5 @@ export async function retrieveContent(question: string) {
 
     console.log(result)
 
-    return result.rows
+    return result
 }

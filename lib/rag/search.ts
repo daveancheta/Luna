@@ -1,22 +1,16 @@
-import { sql } from "drizzle-orm";
-import { db } from "@/index";
+import { supabase } from "@/utils/client";
 
 export async function searchDocuments(
-  questionVector: number[],
+  questionVector: number[]
 ) {
-  // Convert JavaScript array to pgvector format
-  const vector = `[${questionVector.join(",")}]`;
+  const { data, error } = await supabase.rpc("match_documents", {
+    query_embedding: questionVector,
+  });
 
-  const results = await db.execute(sql`
-    SELECT
-      id,
-      content,
-      metadata,
-      1 - (embedding <=> ${vector}::vector) AS similarity
-    FROM documents
-    ORDER BY embedding <=> ${vector}::vector
-    LIMIT 50;
-  `);
+  if (error) {
+    console.error("Vector search error:", error);
+    throw error;
+  }
 
-  return results;
+  return data;
 }

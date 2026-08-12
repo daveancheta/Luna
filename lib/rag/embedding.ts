@@ -3,6 +3,7 @@ import { splitter } from "./splitter"
 import { db } from "@/index";
 import { documents } from "@/db/schema";
 import { randomUUID } from "crypto";
+import { supabase } from "@/utils/client";
 
 export const embeddings = new OllamaEmbeddings({
     model: "nomic-embed-text",
@@ -22,7 +23,7 @@ export async function createEmbeddings() {
         }
     }))
 
-    await db.insert(documents).values(rows)
+    await supabase.from('documents').insert(rows)
 
     console.log(vectors)
 

@@ -1,10 +1,8 @@
-import { conversation, messages } from "@/db/schema"
-import { db } from "@/index"
 import { classifyQuestion } from "@/lib/ai/classify"
 import { generateAnswer } from "@/lib/ai/generate"
 import { auth } from "@/lib/auth"
+import { supabase } from "@/utils/client"
 import { randomUUID } from "crypto"
-import { asc, desc, eq } from "drizzle-orm"
 import { headers } from "next/headers"
 import { NextRequest, NextResponse } from "next/server"
 
@@ -26,31 +24,38 @@ export async function POST(req: NextRequest) {
 
         let conversationId = conversation_id
 
-        const isConversationIdExist = await db
-            .select({ conversationId: conversation.id })
-            .from(conversation)
-            .where(eq(conversation.id, conversation_id))
+        const { data: isConversationIdExist, error } = await supabase
+            .from("conversation")
+            .select("id")
+            .eq("id", conversation_id)
             .limit(1)
 
-        if (isConversationIdExist.length === 0) {
-            const [newConversationID] = await db.insert(conversation).values({
-                id: conversation_id,
-                title: generatedTitle,
-                userId: session.user.id,
-            })
-                .returning({
-                    id: conversation.id
-                })
+            console.log(isConversationIdExist)
 
-            conversationId = newConversationID.id
+        if (isConversationIdExist?.length === 0) {
+            const { data: newConversation, error } = await supabase
+                .from("conversation")
+                .insert({
+                    id: conversation_id,
+                    title: generatedTitle,
+                    user_id: session.user.id,
+                })
+                .select("id")
+                .single();
+
+            conversationId = newConversation?.id
         }
 
-        await db.insert(messages).values({
+        const { error: errorInsertMessage } = await supabase.from('messages').insert({
             id: randomUUID(),
-            conversationId: conversation_id || conversationId,
+            conversation_id: conversation_id || conversationId,
             role: "user",
             message: prompt,
         })
+
+        if (errorInsertMessage) {
+            console.log(errorInsertMessage)
+        }
 
         let response: any = ""
 
@@ -60,9 +65,9 @@ export async function POST(req: NextRequest) {
             response = "I'm Luna, a lung cancer education assistant. I can only help with questions related to lung cancer, including its symptoms, risk factors, diagnosis, staging, treatment, and related medical topics. Please feel free to ask me a lung cancer-related question.";
         }
 
-        await db.insert(messages).values({
+        await supabase.from('messages').insert({
             id: randomUUID(),
-            conversationId: conversation_id || conversationId,
+            conversation_id: conversation_id || conversationId,
             role: "assistant",
             message: response as string,
         })
@@ -95,15 +100,11 @@ export async function GET() {
     }
 
     try {
-        const conversationTitle = await db
-            .select({
-                id: conversation.id,
-                title: conversation.title,
-                created_at: conversation.createdAt
-            })
-            .from(conversation)
-            .where(eq(conversation.userId, session.user.id))
-            .orderBy(asc(conversation.createdAt))
+        const { data: conversationTitle, error } = await supabase
+            .from("conversation")
+            .select("id, title, created_at")
+            .eq("user_id", session.user.id)
+            .order("created_at", { ascending: true });
 
 
         return NextResponse.json({
