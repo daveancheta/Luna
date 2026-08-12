@@ -53,6 +53,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
   const isHomePage = pathname === "/"
   const id = pathname.split("/chat/")[1]
+  const tempId = `temp-${Date.now()}`
 
   React.useEffect(() => {
     handleGetSession(false)
@@ -66,7 +67,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     {
       title: "New Conversation",
       icon: <PencilLine />,
-      url: "/"
+      url: "/new"
     },
     {
       title: "TimeLine",
@@ -125,7 +126,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                {title.map((item, index) => (
+                {title.map((item) => (
                   <SidebarMenuButton key={item.id}>
                     <Link
                       href={`/chat/${item.id}`}
@@ -135,7 +136,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         ? <span className="truncate">
                           {item.title}
                         </span>
-                        : item.id === id ? (
+                        : item.id === id || item.id === tempId ? (
                           <TypingText text={item.title} />
                         ) : (
                           <span className="truncate">

@@ -58,10 +58,9 @@ export default function LandingPage() {
           </p>
 
           <Button
-            size="lg"
             disabled={isLoading}
             onClick={signInWithGoogle}
-            className="mt-8 flex h-12 w-full items-center justify-center gap-3 rounded-full bg-white text-[0.9375rem] font-medium text-[#1C1D2E] shadow-sm ring-1 ring-border hover:bg-gray-50"
+            className="w-full flex-1 h-15 mt-5 rounded-full cursor-pointer"
           >
             <StackIcon name="google" className="size-4" />
             {isLoading ? "Signing in..." : "Continue with Google"}

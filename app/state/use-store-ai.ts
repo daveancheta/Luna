@@ -16,6 +16,8 @@ interface LunaState {
     conversation: Assistant[];
     title: ConversationTitle[];
     conversationTitle: string | null;
+    selectedTitle: string | null;
+    setSelectedTitle: (selectedTitle: string) => void;
     generateResponse: (prompt: string, conversation_id: string) => Promise<void>;
     getConversationTitle: () => Promise<void>;
 }
@@ -25,7 +27,10 @@ export const UseAiStore = create<LunaState>((set) => ({
     conversation: [],
     title: [],
     conversationTitle: null,
+    selectedTitle: null,
 
+    setSelectedTitle: (selectedTitle: string) => set({ selectedTitle: selectedTitle}),
+    
     generateResponse: async (prompt, conversation_id) => {
         const tempId = `temp-${Date.now()}`
         const trimmedPrompt = prompt.trim();
