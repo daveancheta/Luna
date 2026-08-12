@@ -136,14 +136,14 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
     if (prompt.trim() && e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       const text = prompt.trim()
-      generateResponse(text, id)
+      generateResponse(text, id, conversationTitle as string)
       setPrompt("")
     }
   };
 
   const handleSendPrompt = () => {
     const text = prompt.trim()
-    generateResponse(text, id)
+    generateResponse(text, id, conversationTitle as string)
     setPrompt("")
   }
 

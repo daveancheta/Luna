@@ -18,8 +18,9 @@ interface LunaState {
     conversationTitle: string | null;
     selectedTitle: string | null;
     setSelectedTitle: (selectedTitle: string) => void;
-    generateResponse: (prompt: string, conversation_id: string) => Promise<void>;
+    generateResponse: (prompt: string, conversation_id: string, title: string) => Promise<void>;
     getConversationTitle: () => Promise<void>;
+    setConversationToEmpty: () => Promise<void>;
 }
 
 export const UseAiStore = create<LunaState>((set) => ({
@@ -29,9 +30,9 @@ export const UseAiStore = create<LunaState>((set) => ({
     conversationTitle: null,
     selectedTitle: null,
 
-    setSelectedTitle: (selectedTitle: string) => set({ selectedTitle: selectedTitle}),
-    
-    generateResponse: async (prompt, conversation_id) => {
+    setSelectedTitle: (selectedTitle: string) => set({ selectedTitle: selectedTitle }),
+
+    generateResponse: async (prompt, conversation_id, title) => {
         const tempId = `temp-${Date.now()}`
         const trimmedPrompt = prompt.trim();
         if (!trimmedPrompt) return;
@@ -41,12 +42,17 @@ export const UseAiStore = create<LunaState>((set) => ({
             conversation: [...state.conversation, { role: 'user', content: trimmedPrompt }]
         }))
 
-        const generatedTitle = await generateTitle(prompt)
-        set({ conversationTitle: generatedTitle as string })
+        let generatedTitle: any = ""
 
-        set((state) => ({
-            title: [...state.title, { id: tempId, title: generatedTitle as string }]
-        }))
+        if (!title) {
+            generatedTitle = await generateTitle(prompt)
+            set({ conversationTitle: generatedTitle as string })
+
+            set((state) => ({
+                title: [...state.title, { id: tempId, title: generatedTitle as string }]
+            }))
+        }
+
 
         try {
             const result = await fetch("/api/luna", {
@@ -81,6 +87,14 @@ export const UseAiStore = create<LunaState>((set) => ({
             const res = await result.json()
 
             set({ title: res.title })
+        } catch (error) {
+            console.log(error)
+        }
+    },
+
+    setConversationToEmpty: async () => {
+        try {
+            set({ conversation: []})
         } catch (error) {
             console.log(error)
         }

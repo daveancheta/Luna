@@ -49,7 +49,7 @@ const TypingText = ({ text }: { text: string }) => {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { signInWithGoogle, auth, handleGetSession, isSession } = UseAuthStore()
-  const { getConversationTitle, title } = UseAiStore()
+  const { getConversationTitle, title, setConversationToEmpty} = UseAiStore()
   const pathname = usePathname()
   const isHomePage = pathname === "/"
   const id = pathname.split("/chat/")[1]
@@ -107,6 +107,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <SidebarMenuButton
                     className="cursor-pointer"
                     key={index}
+                    onClick={() => setConversationToEmpty()}
                   >
                     <Link href={nav.url} className="flex min-w-0 flex-1 items-center gap-2">
                       {nav.icon}

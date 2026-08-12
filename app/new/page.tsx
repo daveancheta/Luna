@@ -109,7 +109,7 @@ export default function Page() {
     if (prompt.trim() && e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       const text = prompt.trim()
-      generateResponse(text, randomId)
+      generateResponse(text, randomId, "")
       setPrompt("")
 
       router.push(`/chat/${randomId}`)
@@ -118,7 +118,7 @@ export default function Page() {
 
   const handleSendPrompt = () => {
     const text = prompt.trim()
-    generateResponse(text, randomId)
+    generateResponse(text, randomId, "")
     setPrompt("")
 
     router.push(`/chat/${randomId}`)
