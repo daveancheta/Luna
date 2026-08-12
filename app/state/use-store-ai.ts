@@ -3,7 +3,7 @@ import { create } from "zustand";
 
 interface Assistant {
     role: 'user' | 'assistant';
-    content: string;
+    message: string;
 }
 
 interface ConversationTitle {
@@ -13,6 +13,7 @@ interface ConversationTitle {
 
 interface LunaState {
     isGenerating: boolean;
+    isLoadingConversation: boolean;
     conversation: Assistant[];
     title: ConversationTitle[];
     conversationTitle: string | null;
@@ -21,10 +22,12 @@ interface LunaState {
     generateResponse: (prompt: string, conversation_id: string, title: string) => Promise<void>;
     getConversationTitle: () => Promise<void>;
     setConversationToEmpty: () => Promise<void>;
+    getConversation: (id: string) => Promise<void>;
 }
 
-export const UseAiStore = create<LunaState>((set) => ({
+export const UseAiStore = create<LunaState>((set, get) => ({
     isGenerating: false,
+    isLoadingConversation: false,
     conversation: [],
     title: [],
     conversationTitle: null,
@@ -39,7 +42,7 @@ export const UseAiStore = create<LunaState>((set) => ({
 
         set((state) => ({
             isGenerating: true,
-            conversation: [...state.conversation, { role: 'user', content: trimmedPrompt }]
+            conversation: [...state.conversation, { role: 'user', message: trimmedPrompt }]
         }))
 
         let generatedTitle: any = ""
@@ -66,14 +69,14 @@ export const UseAiStore = create<LunaState>((set) => ({
 
             set((state) => ({
                 isGenerating: false,
-                conversation: [...state.conversation, { role: 'assistant', content: text }]
+                conversation: [...state.conversation, { role: 'assistant', message: text }]
             }));
 
         } catch (error) {
             console.log(error)
             set((state) => ({
                 isGenerating: false,
-                conversation: [...state.conversation, { role: 'assistant', content: "Something went wrong. Please try again later." }]
+                conversation: [...state.conversation, { role: 'assistant', message: "Something went wrong. Please try again later." }]
             }));
         } finally {
             set({ isGenerating: false });
@@ -94,9 +97,29 @@ export const UseAiStore = create<LunaState>((set) => ({
 
     setConversationToEmpty: async () => {
         try {
-            set({ conversation: []})
+            set({ conversation: [] })
         } catch (error) {
             console.log(error)
+        }
+    },
+
+    getConversation: async (id) => {
+        const { setSelectedTitle } = get()
+        set({ isLoadingConversation: true })
+
+        try {
+            const result = await fetch(`/api/luna/${id}`)
+
+            const res = await result.json()
+
+            set({ conversation: res.message })
+            setSelectedTitle(res.title[0]?.title)
+
+            console.log(res.title)
+        } catch (error) {
+            console.log(error)
+        } finally {
+            set({ isLoadingConversation: false })
         }
     }
 }));    

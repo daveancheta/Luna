@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/sidebar"
 import { cn } from "@/lib/utils"
 import { ArrowUp, AudioLines, Mic, Moon, Plus } from "lucide-react"
-import { useEffect, useRef, useState } from "react"
+import { use, useEffect, useRef, useState } from "react"
 import ReactMarkdown from 'react-markdown'
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { useTypewriter } from "@/hooks/use-typewriter"
@@ -28,7 +28,7 @@ import { UseSidebarStore } from "../state/use-store-sidebar"
 
 type ChatMessage = {
   role: "user" | "assistant"
-  content: string
+  message: string
 }
 
 function ChatTurn({
@@ -41,7 +41,7 @@ function ChatTurn({
   onTypingChange?: (isTyping: boolean) => void
 }) {
   const { displayed, isTyping } = useTypewriter(
-    message.content,
+    message.message,
     isLast && message.role === "assistant"
   )
 
@@ -54,7 +54,7 @@ function ChatTurn({
   if (message.role === "user") {
     return (
       <div className="w-fit self-end flex rounded-3xl bg-muted px-4 py-3 text-[0.9375rem] text-start leading-relaxed text-foreground justify-end whitespace-pre-wrap">
-        {message.content}
+        {message.message}
       </div>
     )
   }
@@ -71,24 +71,31 @@ function ChatTurn({
             strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
           }}
         >
-          {message.role === "assistant" ? displayed : message.content}
+          {message.role === "assistant" ? displayed : message.message}
         </ReactMarkdown>
       </div>
     </div>
   )
 }
 
-export default function Page() {
+export default function Page({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params)
   const [prompt, setPrompt] = useState("")
   const scrollRef = useRef<HTMLDivElement>(null)
   const messageEndRef = useRef<HTMLDivElement>(null)
-  const { isGenerating, conversation, generateResponse } = UseAiStore()
+  const { isGenerating, conversation, generateResponse, getConversation } = UseAiStore()
   const { auth, handleGetSession, isSession } = UseAuthStore()
   const { sidebar } = UseSidebarStore()
   const [isTypingOut, setIsTypingOut] = useState(false)
   const isMobile = useIsMobile()
   const randomId = crypto.randomUUID()
   const router = useRouter()
+
+  useEffect(() => {
+    if (id) {
+      getConversation(id)
+    }
+  }, [id])
 
   useEffect(() => {
     handleGetSession(true)

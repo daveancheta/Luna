@@ -27,7 +27,7 @@ import { UseSidebarStore } from "../../state/use-store-sidebar"
 
 type ChatMessage = {
   role: "user" | "assistant"
-  content: string
+  message: string
 }
 
 function ChatTurn({
@@ -40,7 +40,7 @@ function ChatTurn({
   onTypingChange?: (isTyping: boolean) => void
 }) {
   const { displayed, isTyping } = useTypewriter(
-    message.content,
+    message.message,
     isLast && message.role === "assistant"
   )
 
@@ -53,7 +53,7 @@ function ChatTurn({
   if (message.role === "user") {
     return (
       <div className="w-fit self-end flex rounded-3xl bg-muted px-4 py-3 text-[0.9375rem] text-start leading-relaxed text-foreground justify-end whitespace-pre-wrap">
-        {message.content}
+        {message.message}
       </div>
     )
   }
@@ -70,7 +70,7 @@ function ChatTurn({
             strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
           }}
         >
-          {message.role === "assistant" ? displayed : message.content}
+          {message.role === "assistant" ? displayed : message.message}
         </ReactMarkdown>
       </div>
     </div>
@@ -82,7 +82,7 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
   const [prompt, setPrompt] = useState("")
   const scrollRef = useRef<HTMLDivElement>(null)
   const messageEndRef = useRef<HTMLDivElement>(null)
-  const { isGenerating, conversation, generateResponse, conversationTitle } = UseAiStore()
+  const { isGenerating, conversation, generateResponse, conversationTitle, selectedTitle, getConversation } = UseAiStore()
   const { auth, handleGetSession, isSession } = UseAuthStore()
   const { sidebar } = UseSidebarStore()
   const [isTypingOut, setIsTypingOut] = useState(false)
@@ -177,7 +177,7 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
             </div>
           }
           <h1 className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
-            {displayTitle}
+            {selectedTitle ? selectedTitle : displayTitle}
           </h1>
           <div className="w-8 shrink-0" aria-hidden />
         </header>

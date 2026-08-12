@@ -49,7 +49,7 @@ const TypingText = ({ text }: { text: string }) => {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { signInWithGoogle, auth, handleGetSession, isSession } = UseAuthStore()
-  const { getConversationTitle, title, setConversationToEmpty} = UseAiStore()
+  const { getConversationTitle, title, setConversationToEmpty, setSelectedTitle} = UseAiStore()
   const pathname = usePathname()
   const isHomePage = pathname === "/"
   const id = pathname.split("/chat/")[1]
