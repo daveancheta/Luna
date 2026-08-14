@@ -25,6 +25,7 @@ import { UseAiStore } from "@/app/state/use-store-ai"
 import Link from "next/link"
 import { SidebarHeaderContent } from "./sidebar-header-content"
 import { usePathname } from "next/navigation"
+import { supabase } from "@/utils/client"
 
 const TypingText = ({ text }: { text: string }) => {
   const [displayText, setDisplayText] = React.useState("")
@@ -49,11 +50,7 @@ const TypingText = ({ text }: { text: string }) => {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { signInWithGoogle, auth, handleGetSession, isSession } = UseAuthStore()
-  const { getConversationTitle, title, setConversationToEmpty, setSelectedTitle, selectedConversationId } = UseAiStore()
-  const pathname = usePathname()
-  const isHomePage = pathname === "/"
-  const id = pathname.split("/chat/")[1]
-  const tempId = `temp-${Date.now()}`
+  const { getConversationTitle, title, setConversationToEmpty, setSelectedTitle, selectedConversationId, setSelectedConversationId } = UseAiStore()
 
   React.useEffect(() => {
     handleGetSession(false)
@@ -61,7 +58,26 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   React.useEffect(() => {
     getConversationTitle()
-  }, [getConversationTitle])
+  }, [])
+
+  React.useEffect(() => {
+    const channel = supabase
+      .channel("public:title")
+      .on("postgres_changes", {
+        event: "*",
+        schema: "public",
+        table: "conversation"
+      },
+        async (payload: any) => {
+          await getConversationTitle()
+        })
+        .subscribe()
+
+        return () => {
+          supabase.removeChannel(channel)
+        }
+
+  }, [])
 
   const navMain = [
     {
@@ -128,7 +144,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenu>
               <SidebarMenuItem>
                 {[...title].reverse().map((item) => (
-                  <SidebarMenuButton key={item.id} onClick={() => { setSelectedTitle(item.title) }}>
+                  <SidebarMenuButton key={item.id} onClick={() => { setSelectedTitle(item.title), setSelectedConversationId(item.id) }}>
                     <Link
                       href={`/chat/${item.id}`}
                       className="flex min-w-0 flex-1 items-center"

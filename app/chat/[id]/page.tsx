@@ -24,6 +24,7 @@ import { useIsMobile } from "@/hooks/use-mobile"
 import { UseAiStore } from "../../state/use-store-ai"
 import { UseAuthStore } from "../../state/use-store-auth"
 import { UseSidebarStore } from "../../state/use-store-sidebar"
+import { supabase } from "@/utils/client"
 
 type ChatMessage = {
   role: "user" | "assistant"
@@ -88,6 +89,28 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
   const [isTypingOut, setIsTypingOut] = useState(false)
   const isMobile = useIsMobile()
   const [displayTitle, setDisplayTitle] = useState("");
+
+  useEffect(() => {
+    getConversation(id)
+  }, [id])
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("public:messages")
+      .on("postgres_changes", {
+        event: "*",
+        schema: "public",
+        table: "messages"
+      },
+        async (payload: any) => {
+          getConversation(id)
+        })
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [id])
 
   useEffect(() => {
     if (conversationTitle) {

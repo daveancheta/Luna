@@ -45,11 +45,12 @@ export const UseAiStore = create<LunaState>((set, get) => ({
         if (!trimmedPrompt) return;
         const { setSelectedConversationId } = get()
 
+        set({ isGenerating: true })
+
         setSelectedConversationId(conversation_id)
 
         set((state) => ({
-            isGenerating: true,
-            conversation: [...state.conversation, { role: 'user', message: trimmedPrompt }]
+            conversation: [...state.conversation, { role: "user", message: trimmedPrompt }]
         }))
 
         let generatedTitle: any = "";
@@ -57,34 +58,16 @@ export const UseAiStore = create<LunaState>((set, get) => ({
         if (!title) {
             generatedTitle = await generateTitle(prompt)
             set({ conversationTitle: generatedTitle as string })
-
-            set((state) => ({
-                title: [...state.title, { id: conversation_id, title: generatedTitle as string, created_at: new Date() }]
-            }))
         }
 
-
         try {
-            const result = await fetch("/api/luna", {
+            await fetch("/api/luna", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ prompt, conversation_id, generatedTitle }),
             })
-
-            const res = await result.json();
-            const text = res.message;
-
-            set((state) => ({
-                isGenerating: false,
-                conversation: [...state.conversation, { role: 'assistant', message: text }]
-            }));
-
         } catch (error) {
             console.log(error)
-            set((state) => ({
-                isGenerating: false,
-                conversation: [...state.conversation, { role: 'assistant', message: "Something went wrong. Please try again later." }]
-            }));
         } finally {
             set({ isGenerating: false });
         }
