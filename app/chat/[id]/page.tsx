@@ -15,7 +15,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { cn } from "@/lib/utils"
-import { ArrowUp, AudioLines, Mic, Moon, Plus } from "lucide-react"
+import { ArrowUp, AudioLines, Loader2, Mic, Moon, Plus } from "lucide-react"
 import { use, useEffect, useRef, useState } from "react"
 import ReactMarkdown from 'react-markdown'
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
@@ -25,6 +25,7 @@ import { UseAiStore } from "../../state/use-store-ai"
 import { UseAuthStore } from "../../state/use-store-auth"
 import { UseSidebarStore } from "../../state/use-store-sidebar"
 import { supabase } from "@/utils/client"
+import MessageSkeleton from "@/components/message-skeleton"
 
 type ChatMessage = {
   role: "user" | "assistant"
@@ -83,7 +84,7 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
   const [prompt, setPrompt] = useState("")
   const scrollRef = useRef<HTMLDivElement>(null)
   const messageEndRef = useRef<HTMLDivElement>(null)
-  const { isGenerating, conversation, generateResponse, conversationTitle, selectedTitle, getConversation } = UseAiStore()
+  const { isGenerating, conversation, generateResponse, conversationTitle, selectedTitle, getConversation, isLoadingConversation } = UseAiStore()
   const { auth, handleGetSession, isSession } = UseAuthStore()
   const { sidebar } = UseSidebarStore()
   const [isTypingOut, setIsTypingOut] = useState(false)
@@ -228,7 +229,11 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
           </div>
         </div>
 
-        <div className={cn(conversation.length === 0 ? "hidden" : "flex-1 overflow-y-auto overscroll-contain scrollable-div")}>
+        {isLoadingConversation && (
+          <MessageSkeleton />
+        )}
+
+        <div className={cn(conversation.length === 0 || isLoadingConversation ? "hidden" : "flex-1 overflow-y-auto overscroll-contain scrollable-div")}>
           <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 py-10 md:px-6">
             {conversation.map((message, index) => (
               <ChatTurn message={message} key={index} isLast={index === conversation.length - 1} onTypingChange={setIsTypingOut} />
