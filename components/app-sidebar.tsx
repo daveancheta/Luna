@@ -24,7 +24,6 @@ import NavUser from "./nav-user"
 import { UseAiStore } from "@/app/state/use-store-ai"
 import Link from "next/link"
 import { SidebarHeaderContent } from "./sidebar-header-content"
-import { usePathname } from "next/navigation"
 import { supabase } from "@/utils/client"
 
 const TypingText = ({ text }: { text: string }) => {
@@ -93,7 +92,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     {
       title: "Documents",
       icon: <FileText />,
-      url: "/"
+      url: "/documents"
     },
     {
       title: "Images",
