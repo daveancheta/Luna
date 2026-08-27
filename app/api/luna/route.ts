@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
         if (classifier.toLowerCase().includes("true")) {
             response = await generateAnswer(prompt)
         } else {
-            response = "I'm Luna, a lung cancer education assistant. I can only help with questions related to lung cancer, including its symptoms, risk factors, diagnosis, staging, treatment, and related medical topics. Please feel free to ask me a lung cancer-related question.";
+            response = "I'm Luna, an AI assistant specializing in lung cancer, thoracic oncology, and pulmonary tumor education. I can help with symptoms, risk factors, diagnosis, staging, treatments (including adult and pediatric thoracic tumors), and clinical guidelines. Please feel free to ask a question related to lung cancer or thoracic oncology.";
         }
 
         await supabase.from('messages').insert({
