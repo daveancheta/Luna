@@ -28,6 +28,11 @@ export async function PATCH(request: NextRequest) {
 
   const body = await request.json();
   const id = typeof body.id === "string" ? body.id : "";
+  if (body.all === true) {
+    await db.update(notifications).set({ isRead: true })
+      .where(eq(notifications.userId, userId));
+    return NextResponse.json({ success: true });
+  }
   if (!id) return NextResponse.json({ message: "Notification id is required" }, { status: 400 });
 
   await db.update(notifications).set({ isRead: true })
