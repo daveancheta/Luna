@@ -57,6 +57,9 @@ export const UseAiStore = create<LunaState>((set, get) => ({
         if (!title) {
             generatedTitle = await generateTitle(prompt)
             set({ conversationTitle: generatedTitle as string })
+        } else {
+            generatedTitle = title
+            set({ conversationTitle: title })
         }
 
         try {

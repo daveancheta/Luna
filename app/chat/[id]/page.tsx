@@ -114,10 +114,11 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
   }, [id])
 
   useEffect(() => {
-    if (conversationTitle) {
-      document.title = conversationTitle
+    const titleToDisplay = conversationTitle || selectedTitle;
+    if (titleToDisplay) {
+      document.title = `${titleToDisplay} | Luna`
     }
-  }, [conversationTitle])
+  }, [conversationTitle, selectedTitle])
 
   useEffect(() => {
     if (!conversationTitle) {

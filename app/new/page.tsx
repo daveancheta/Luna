@@ -90,6 +90,10 @@ export default function Page() {
   const router = useRouter()
 
   useEffect(() => {
+    document.title = "New Conversation | Luna"
+  }, [])
+
+  useEffect(() => {
     setConversationToEmpty()
     setSelectedTitle(null)
   }, [setConversationToEmpty, setSelectedTitle])

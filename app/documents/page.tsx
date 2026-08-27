@@ -75,6 +75,10 @@ export default function DocumentsPage() {
     const { generateResponse } = UseAiStore()
 
     useEffect(() => {
+        document.title = "Medical Documents Library | Luna"
+    }, [])
+
+    useEffect(() => {
         handleGetSession(true)
     }, [handleGetSession])
 
