@@ -19,7 +19,7 @@ interface LunaState {
     title: ConversationTitle[];
     conversationTitle: string | null;
     selectedTitle: string | null;
-    setSelectedTitle: (selectedTitle: string) => void;
+    setSelectedTitle: (selectedTitle: string | null) => void;
     selectedConversationId: string | null;
     setSelectedConversationId: (selectedConversationId: string) => void;
     generateResponse: (prompt: string, conversation_id: string, title: string) => Promise<void>;
@@ -37,7 +37,7 @@ export const UseAiStore = create<LunaState>((set, get) => ({
     selectedTitle: null,
     selectedConversationId: null,
 
-    setSelectedTitle: (selectedTitle: string) => set({ selectedTitle: selectedTitle }),
+    setSelectedTitle: (selectedTitle: string | null) => set({ selectedTitle: selectedTitle }),
     setSelectedConversationId: (selectedConversationId: string) => set({ selectedConversationId: selectedConversationId }),
 
     generateResponse: async (prompt, conversation_id, title) => {
@@ -45,13 +45,12 @@ export const UseAiStore = create<LunaState>((set, get) => ({
         if (!trimmedPrompt) return;
         const { setSelectedConversationId } = get()
 
-        set({ isGenerating: true })
+        set((state) => ({
+            isGenerating: true,
+            conversation: [...state.conversation, { role: 'user', message: trimmedPrompt }],
+        }))
 
         setSelectedConversationId(conversation_id)
-
-        set((state) => ({
-            conversation: [...state.conversation, { role: "user", message: trimmedPrompt }]
-        }))
 
         let generatedTitle: any = "";
 
@@ -61,11 +60,18 @@ export const UseAiStore = create<LunaState>((set, get) => ({
         }
 
         try {
-            await fetch("/api/luna", {
+            const result = await fetch("/api/luna", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ prompt, conversation_id, generatedTitle }),
             })
+
+            const response = await result.json()
+            if (response.success && response.message) {
+                set((state) => ({
+                    conversation: [...state.conversation, { role: 'assistant', message: response.message }],
+                }))
+            }
         } catch (error) {
             console.log(error)
         } finally {
@@ -102,7 +108,9 @@ export const UseAiStore = create<LunaState>((set, get) => ({
 
             const res = await result.json()
 
-            set({ conversation: res.message })
+            if (res.message?.length || get().conversation.length === 0) {
+                set({ conversation: res.message ?? [] })
+            }
             setSelectedTitle(res.title[0]?.title)
 
             console.log(res.title)

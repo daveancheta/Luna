@@ -229,11 +229,11 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
           </div>
         </div>
 
-        {isLoadingConversation && (
+        {isLoadingConversation && conversation.length === 0 && (
           <MessageSkeleton />
         )}
 
-        <div className={cn(conversation.length === 0 || isLoadingConversation ? "hidden" : "flex-1 overflow-y-auto overscroll-contain scrollable-div")}>
+        <div className={cn(conversation.length === 0 ? "hidden" : "flex-1 overflow-y-auto overscroll-contain scrollable-div")}>
           <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 py-10 md:px-6">
             {conversation.map((message, index) => (
               <ChatTurn message={message} key={index} isLast={index === conversation.length - 1} onTypingChange={setIsTypingOut} />

@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/sidebar"
 import { cn } from "@/lib/utils"
 import { ArrowUp, AudioLines, Mic, Moon, Plus } from "lucide-react"
-import { use, useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import ReactMarkdown from 'react-markdown'
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { useTypewriter } from "@/hooks/use-typewriter"
@@ -78,24 +78,21 @@ function ChatTurn({
   )
 }
 
-export default function Page({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params)
+export default function Page() {
   const [prompt, setPrompt] = useState("")
   const scrollRef = useRef<HTMLDivElement>(null)
   const messageEndRef = useRef<HTMLDivElement>(null)
-  const { isGenerating, conversation, generateResponse, getConversation } = UseAiStore()
+  const { isGenerating, conversation, generateResponse, setConversationToEmpty, setSelectedTitle } = UseAiStore()
   const { auth, handleGetSession, isSession } = UseAuthStore()
   const { sidebar } = UseSidebarStore()
   const [isTypingOut, setIsTypingOut] = useState(false)
   const isMobile = useIsMobile()
-  const randomId = crypto.randomUUID()
   const router = useRouter()
 
   useEffect(() => {
-    if (id) {
-      getConversation(id)
-    }
-  }, [id])
+    setConversationToEmpty()
+    setSelectedTitle(null)
+  }, [setConversationToEmpty, setSelectedTitle])
 
   useEffect(() => {
     handleGetSession(true)
@@ -115,20 +112,17 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
   const handleKeyEnter = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (prompt.trim() && e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
-      const text = prompt.trim()
-      generateResponse(text, randomId, "")
-      setPrompt("")
-
-      router.push(`/chat/${randomId}`)
+      handleSendPrompt()
     }
   };
 
   const handleSendPrompt = () => {
     const text = prompt.trim()
-    generateResponse(text, randomId, "")
+    if (!text || isGenerating) return
+    const conversationId = crypto.randomUUID()
+    generateResponse(text, conversationId, "")
     setPrompt("")
-
-    router.push(`/chat/${randomId}`)
+    router.push(`/chat/${conversationId}`)
   }
 
   const canSend = prompt.trim().length > 0
