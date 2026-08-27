@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Bell, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { supabase } from "@/utils/client"
@@ -12,7 +12,42 @@ export function NotificationBell() {
   const { auth } = UseAuthStore()
   const [open, setOpen] = useState(false)
   const [items, setItems] = useState<Notification[]>([])
+  const audioContextRef = useRef<AudioContext | null>(null)
   const unreadCount = items.filter((item) => !item.isRead).length
+
+  function prepareAudio() {
+    if (!audioContextRef.current) audioContextRef.current = new AudioContext()
+    if (audioContextRef.current.state === "suspended") void audioContextRef.current.resume()
+  }
+
+  function playNotificationSound() {
+    try {
+      const audioContext = audioContextRef.current ?? new AudioContext()
+      audioContextRef.current = audioContext
+      const playTone = (frequency: number, startTime: number) => {
+        const oscillator = audioContext.createOscillator()
+        const gain = audioContext.createGain()
+        oscillator.frequency.value = frequency
+        oscillator.type = "triangle"
+        gain.gain.setValueAtTime(0.0001, startTime)
+        gain.gain.exponentialRampToValueAtTime(0.3, startTime + 0.01)
+        gain.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.19)
+        oscillator.connect(gain)
+        gain.connect(audioContext.destination)
+        oscillator.start(startTime)
+        oscillator.stop(startTime + 0.2)
+      }
+      const play = () => {
+        const startTime = audioContext.currentTime
+        playTone(740, startTime)
+        playTone(988, startTime + 0.12)
+      }
+      if (audioContext.state === "suspended") void audioContext.resume().then(play)
+      else play()
+    } catch {
+      // Audio is optional and may be unavailable in restricted browsers.
+    }
+  }
 
   async function loadNotifications() {
     const response = await fetch("/api/notifications")
@@ -25,6 +60,7 @@ export function NotificationBell() {
     const channel = supabase.channel(`notifications-${auth.id}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${auth.id}` }, (payload) => {
         setItems((current) => [payload.new as Notification, ...current].slice(0, 20))
+        playNotificationSound()
       })
       .subscribe()
     return () => { clearTimeout(timer); void supabase.removeChannel(channel) }
@@ -36,7 +72,7 @@ export function NotificationBell() {
   }
 
   return <div className="relative">
-    <Button variant="ghost" size="icon" className="relative" onClick={() => setOpen((value) => !value)} aria-label="Open notifications" aria-expanded={open}>
+    <Button variant="ghost" size="icon" className="relative" onClick={() => { prepareAudio(); setOpen((value) => !value) }} aria-label="Open notifications" aria-expanded={open}>
       <Bell />
       {unreadCount > 0 && <span className="absolute right-1 top-1 flex size-4 items-center justify-center rounded-full bg-destructive text-[10px] text-destructive-foreground">{unreadCount > 9 ? "9+" : unreadCount}</span>}
     </Button>
