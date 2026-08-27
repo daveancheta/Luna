@@ -1,4 +1,5 @@
 import { generateTitle } from "@/lib/ai/generate-title";
+import { speechService } from "@/lib/audio/speech";
 import { create } from "zustand";
 
 interface Assistant {
@@ -22,6 +23,16 @@ interface LunaState {
     setSelectedTitle: (selectedTitle: string | null) => void;
     selectedConversationId: string | null;
     setSelectedConversationId: (selectedConversationId: string) => void;
+    // Audio & Speech (TTS / STT)
+    isSpeaking: boolean;
+    speakingIndex: number | null;
+    isAudioMode: boolean;
+    isListening: boolean;
+    setIsListening: (isListening: boolean) => void;
+    speakMessage: (text: string, index?: number) => void;
+    stopSpeaking: () => void;
+    toggleAudioMode: () => void;
+    // Core conversation methods
     generateResponse: (prompt: string, conversation_id: string, title: string) => Promise<void>;
     getConversationTitle: () => Promise<void>;
     setConversationToEmpty: () => Promise<void>;
@@ -36,6 +47,47 @@ export const UseAiStore = create<LunaState>((set, get) => ({
     conversationTitle: null,
     selectedTitle: null,
     selectedConversationId: null,
+
+    // Audio & Speech State
+    isSpeaking: false,
+    speakingIndex: null,
+    isAudioMode: false,
+    isListening: false,
+
+    setIsListening: (isListening: boolean) => set({ isListening }),
+
+    toggleAudioMode: () => {
+        const next = !get().isAudioMode;
+        if (!next) {
+            speechService.stop();
+            set({ isAudioMode: false, isSpeaking: false, speakingIndex: null });
+        } else {
+            set({ isAudioMode: true });
+        }
+    },
+
+    speakMessage: (text: string, index?: number) => {
+        const { speakingIndex, isSpeaking } = get();
+
+        // If clicking the currently playing message, toggle stop
+        if (isSpeaking && speakingIndex === index) {
+            speechService.stop();
+            set({ isSpeaking: false, speakingIndex: null });
+            return;
+        }
+
+        speechService.speak(
+            text,
+            () => set({ isSpeaking: true, speakingIndex: index ?? null }),
+            () => set({ isSpeaking: false, speakingIndex: null }),
+            () => set({ isSpeaking: false, speakingIndex: null })
+        );
+    },
+
+    stopSpeaking: () => {
+        speechService.stop();
+        set({ isSpeaking: false, speakingIndex: null });
+    },
 
     setSelectedTitle: (selectedTitle: string | null) => set({ selectedTitle: selectedTitle }),
     setSelectedConversationId: (selectedConversationId: string) => set({ selectedConversationId: selectedConversationId }),
@@ -71,9 +123,15 @@ export const UseAiStore = create<LunaState>((set, get) => ({
 
             const response = await result.json()
             if (response.success && response.message) {
-                set((state) => ({
-                    conversation: [...state.conversation, { role: 'assistant', message: response.message }],
-                }))
+                const updatedConv = [...get().conversation, { role: 'assistant' as const, message: response.message }]
+                set({
+                    conversation: updatedConv,
+                })
+
+                // Auto-read response if Audio Readout mode is active
+                if (get().isAudioMode) {
+                    get().speakMessage(response.message, updatedConv.length - 1)
+                }
             }
         } catch (error) {
             console.log(error)
@@ -96,7 +154,8 @@ export const UseAiStore = create<LunaState>((set, get) => ({
 
     setConversationToEmpty: async () => {
         try {
-            set({ conversation: [] })
+            speechService.stop();
+            set({ conversation: [], isSpeaking: false, speakingIndex: null })
         } catch (error) {
             console.log(error)
         }
