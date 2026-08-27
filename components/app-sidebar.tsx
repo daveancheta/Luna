@@ -15,7 +15,7 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 import { cn } from "@/lib/utils"
-import { FileText, Images, Library, PencilLine, Timeline } from "lucide-react"
+import { Check, FileText, Images, Library, MoreHorizontal, Pencil, PencilLine, Timeline, Trash2, X } from "lucide-react"
 import { Button } from "./ui/button"
 import StackIcon from 'tech-stack-icons'
 import { UseAuthStore } from "@/app/state/use-store-auth"
@@ -23,9 +23,16 @@ import NavUserSkeleton from "./nav-user-skeleton"
 import NavUser from "./nav-user"
 import { UseAiStore } from "@/app/state/use-store-ai"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { SidebarHeaderContent } from "./sidebar-header-content"
 import { supabase } from "@/utils/client"
 import { FamilySettings } from "./family-settings"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const TypingText = ({ text }: { text: string }) => {
   const [displayText, setDisplayText] = React.useState("")
@@ -49,7 +56,10 @@ const TypingText = ({ text }: { text: string }) => {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const router = useRouter()
   const [settingsOpen, setSettingsOpen] = React.useState(false)
+  const [renamingId, setRenamingId] = React.useState<string | null>(null)
+  const [renameValue, setRenameValue] = React.useState("")
   const { signInWithGoogle, auth, handleGetSession, isSession } = UseAuthStore()
   const { getConversationTitle, title, setConversationToEmpty, setSelectedTitle, selectedConversationId, setSelectedConversationId } = UseAiStore()
 
@@ -61,6 +71,33 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     getConversationTitle()
   }, [])
 
+  async function renameConversation(id: string) {
+    const titleValue = renameValue.trim()
+    if (!titleValue) return
+    const response = await fetch(`/api/luna/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title: titleValue }),
+    })
+    if (response.ok) {
+      setRenamingId(null)
+      await getConversationTitle()
+    }
+  }
+
+  async function deleteConversation(id: string) {
+    const response = await fetch(`/api/luna/${id}`, { method: "DELETE" })
+    if (response.ok) {
+      if (selectedConversationId === id) {
+        setConversationToEmpty()
+        setSelectedConversationId("")
+        setSelectedTitle(null)
+        router.push("/new")
+      }
+      await getConversationTitle()
+    }
+  }
+
   React.useEffect(() => {
     const channel = supabase
       .channel("public:title")
@@ -69,7 +106,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         schema: "public",
         table: "conversation"
       },
-        async (payload: any) => {
+        async () => {
           await getConversationTitle()
         })
         .subscribe()
@@ -145,20 +182,28 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenu>
               <SidebarMenuItem>
                 {[...title].reverse().map((item) => (
-                  <SidebarMenuButton key={item.id} onClick={() => { setSelectedTitle(item.title), setSelectedConversationId(item.id) }}>
-                    <Link
-                      href={`/chat/${item.id}`}
-                      className="flex min-w-0 flex-1 items-center"
-                    >
-                      {item.id === selectedConversationId ? (
-                        <TypingText text={item.title} />
-                      ) : (
-                        <span className="truncate">
-                          {item.title}
-                        </span>
-                      )}
-                    </Link>
-                  </SidebarMenuButton>
+                  <SidebarMenuItem key={item.id} className="group/recent relative">
+                    {renamingId === item.id ? <SidebarMenuButton className="relative">
+                      <input autoFocus value={renameValue} onChange={(event) => setRenameValue(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") void renameConversation(item.id); if (event.key === "Escape") setRenamingId(null) }} className="min-w-0 flex-1 rounded border bg-background px-1 text-sm outline-none" aria-label="Conversation name" />
+                      <button type="button" className="shrink-0 rounded p-1 hover:bg-muted" onClick={(event) => { event.stopPropagation(); void renameConversation(item.id) }} aria-label="Save conversation name"><Check className="size-3.5" /></button>
+                      <button type="button" className="shrink-0 rounded p-1 hover:bg-muted" onClick={(event) => { event.stopPropagation(); setRenamingId(null) }} aria-label="Cancel rename"><X className="size-3.5" /></button>
+                    </SidebarMenuButton> : <>
+                      <SidebarMenuButton onClick={() => { setSelectedTitle(item.title); setSelectedConversationId(item.id) }}>
+                        <Link href={`/chat/${item.id}`} className="flex min-w-0 flex-1 items-center">
+                          {item.id === selectedConversationId ? <TypingText text={item.title} /> : <span className="truncate">{item.title}</span>}
+                        </Link>
+                      </SidebarMenuButton>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger render={<button type="button" className="absolute right-1 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-muted group-hover/recent:opacity-100 group-focus-within/recent:opacity-100" aria-label={`Actions for ${item.title}`} />}>
+                          <MoreHorizontal className="size-4" />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" side="right" className="w-36">
+                          <DropdownMenuItem onClick={() => { setRenamingId(item.id); setRenameValue(item.title) }}><Pencil className="size-4" /> Rename</DropdownMenuItem>
+                          <DropdownMenuItem variant="destructive" onClick={() => void deleteConversation(item.id)}><Trash2 className="size-4" /> Delete</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </>}
+                  </SidebarMenuItem>
                 ))}
               </SidebarMenuItem>
             </SidebarMenu>
