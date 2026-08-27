@@ -1,5 +1,12 @@
 import { relations } from "drizzle-orm";
-import { pgTable, text, timestamp, boolean, index, jsonb, vector } from "drizzle-orm/pg-core";
+import { pgEnum, pgTable, text, timestamp, boolean, index, jsonb, vector } from "drizzle-orm/pg-core";
+
+export const familyRelationshipStatus = pgEnum("family_relationship_status", [
+  "PENDING",
+  "ACCEPTED",
+  "DECLINED",
+  "REMOVED",
+]);
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -109,6 +116,38 @@ export const messages = pgTable("messages", {
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
 });
+
+export const familyRelationships = pgTable(
+  "family_relationships",
+  {
+    id: text("id").primaryKey(),
+    requesterId: text("requester_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    recipientId: text("recipient_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    relationship: text("relationship").notNull(),
+    status: familyRelationshipStatus("status").default("PENDING").notNull(),
+    receiveHelpAlerts: boolean("receive_help_alerts").default(true).notNull(),
+    appointments: boolean("appointments").default(false).notNull(),
+    medications: boolean("medications").default(false).notNull(),
+    healthRecords: boolean("health_records").default(false).notNull(),
+    medicalReports: boolean("medical_reports").default(false).notNull(),
+    healthTimeline: boolean("health_timeline").default(false).notNull(),
+    location: boolean("location").default(false).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    acceptedAt: timestamp("accepted_at"),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("family_relationships_requester_idx").on(table.requesterId),
+    index("family_relationships_recipient_idx").on(table.recipientId),
+  ],
+);
 
 export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session),

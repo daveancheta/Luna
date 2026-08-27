@@ -25,6 +25,7 @@ import { UseAiStore } from "@/app/state/use-store-ai"
 import Link from "next/link"
 import { SidebarHeaderContent } from "./sidebar-header-content"
 import { supabase } from "@/utils/client"
+import { FamilySettings } from "./family-settings"
 
 const TypingText = ({ text }: { text: string }) => {
   const [displayText, setDisplayText] = React.useState("")
@@ -48,6 +49,7 @@ const TypingText = ({ text }: { text: string }) => {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const [settingsOpen, setSettingsOpen] = React.useState(false)
   const { signInWithGoogle, auth, handleGetSession, isSession } = UseAuthStore()
   const { getConversationTitle, title, setConversationToEmpty, setSelectedTitle, selectedConversationId, setSelectedConversationId } = UseAiStore()
 
@@ -168,7 +170,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarFooter className="mb-2 border-t">
         {isSession
           ? <NavUserSkeleton />
-          : auth && <NavUser name={auth?.name as string} email={auth?.email as string} image={auth?.image as string} />
+          : auth && <NavUser name={auth?.name as string} email={auth?.email as string} image={auth?.image as string} onSettings={() => setSettingsOpen(true)} />
         }
 
         {!auth && !isSession &&
@@ -187,6 +189,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </Button>
         }
       </SidebarFooter>
+      <FamilySettings open={settingsOpen} onOpenChange={setSettingsOpen} />
     </Sidebar>
   )
 }
