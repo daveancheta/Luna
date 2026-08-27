@@ -1,6 +1,7 @@
 "use client"
 
 import { AppSidebar } from "@/components/app-sidebar"
+import { NotificationBell } from "@/components/notification-bell"
 import { Button } from "@/components/ui/button"
 import {
   InputGroup,
@@ -341,7 +342,7 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
           <h1 className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
             {selectedTitle ? selectedTitle : displayTitle}
           </h1>
-          <div className="w-8 shrink-0" aria-hidden />
+          <NotificationBell />
         </header>
 
         <div ref={scrollRef} className={cn(conversation.length > 0 && "hidden")}>

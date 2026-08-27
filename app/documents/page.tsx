@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { AppSidebar } from "@/components/app-sidebar"
+import { NotificationBell } from "@/components/notification-bell"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
@@ -191,6 +192,7 @@ export default function DocumentsPage() {
                     </div>
 
                     <div className="flex items-center gap-2">
+                        <NotificationBell />
                         {/* View Mode Switcher (Desktop) */}
                         <div className="hidden sm:flex items-center rounded-lg border border-border/60 bg-muted/40 p-0.5">
                             <button

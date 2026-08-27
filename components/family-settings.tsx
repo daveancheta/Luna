@@ -40,6 +40,7 @@ export function FamilySettings({ open, onOpenChange }: { open: boolean; onOpenCh
     setOutgoing(data.outgoing ?? [])
   }
 
+
   useEffect(() => {
     if (open) {
       const timer = setTimeout(() => { void loadFamily() }, 0)

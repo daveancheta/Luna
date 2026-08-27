@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "crypto";
 
 import { db } from "@/index";
-import { familyRelationships, user } from "@/db/schema";
+import { familyRelationships, notifications, user } from "@/db/schema";
 import { auth } from "@/lib/auth";
 
 const relationships = [
@@ -20,6 +20,12 @@ const permissionFields = [
 async function getUserId() {
   const session = await auth.api.getSession({ headers: await headers() });
   return session?.user.id ?? null;
+}
+
+async function createNotification(userId: string, title: string, message: string, relatedId: string) {
+  await db.insert(notifications).values({
+    id: randomUUID(), userId, type: "FAMILY", title, message, relatedId,
+  });
 }
 
 export async function GET(request: NextRequest) {
@@ -84,6 +90,8 @@ export async function POST(request: NextRequest) {
   const [created] = await db.insert(familyRelationships).values({
     id: randomUUID(), requesterId: userId, recipientId, relationship,
   }).returning();
+  const requester = await db.query.user.findFirst({ where: eq(user.id, userId) });
+  await createNotification(recipientId, "Family request", `${requester?.name ?? "Someone"} wants to connect with you as family.`, created.id);
   return NextResponse.json({ relationship: created }, { status: 201 });
 }
 
@@ -103,18 +111,23 @@ export async function PATCH(request: NextRequest) {
       status: action === "accept" ? "ACCEPTED" : "DECLINED",
       acceptedAt: action === "accept" ? new Date() : null,
     }).where(eq(familyRelationships.id, id)).returning();
+    const actor = await db.query.user.findFirst({ where: eq(user.id, userId) });
+    await createNotification(existing.requesterId, action === "accept" ? "Family request accepted" : "Family request declined", `${actor?.name ?? "Your family member"} ${action === "accept" ? "accepted" : "declined"} your family request.`, id);
     return NextResponse.json({ relationship: updated });
   }
 
   if (action === "cancel") {
     if (existing.requesterId !== userId || existing.status !== "PENDING") return NextResponse.json({ message: "Forbidden" }, { status: 403 });
     await db.update(familyRelationships).set({ status: "REMOVED" }).where(eq(familyRelationships.id, id));
+    await createNotification(existing.recipientId, "Family request cancelled", "A family request was cancelled.", id);
     return NextResponse.json({ success: true });
   }
 
   if (action === "remove") {
     if (![existing.requesterId, existing.recipientId].includes(userId) || existing.status !== "ACCEPTED") return NextResponse.json({ message: "Forbidden" }, { status: 403 });
     await db.update(familyRelationships).set({ status: "REMOVED" }).where(eq(familyRelationships.id, id));
+    const otherUserId = existing.requesterId === userId ? existing.recipientId : existing.requesterId;
+    await createNotification(otherUserId, "Family connection removed", "A family connection was removed.", id);
     return NextResponse.json({ success: true });
   }
 
